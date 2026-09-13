@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Launch Lab 21 — платформа инкубатора</title>
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#f2f2f5; --surface-3:#e8e8ed;
+  --text:#1d1d1f; --text-2:#6e6e73; --text-3:#8e8e93;
+  --sep:rgba(0,0,0,.08); --sep-strong:rgba(0,0,0,.14);
+  --accent:#7b1fd9; --accent-hover:#6a16c0; --accent-soft:rgba(134,27,227,.10); --on-accent:#fff;
+  --green:#12a063; --green-soft:rgba(68,235,153,.20);
+  --orange:#c46a00; --orange-soft:rgba(255,159,10,.16);
+  --red:#e0342a; --red-soft:rgba(255,59,48,.10);
+  --nav-bg:rgba(245,245,247,.72);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04),0 1px 1px rgba(0,0,0,.02);
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.06);
+  --shadow-lg:0 2px 6px rgba(0,0,0,.06),0 30px 80px rgba(0,0,0,.18);
+  --r-sm:10px; --r:18px; --r-lg:26px;
+  --ease:cubic-bezier(.25,.1,.25,1); --ease-out:cubic-bezier(.16,1,.3,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000; --surface:#1c1c1e; --surface-2:#2c2c2e; --surface-3:#3a3a3c;
+    --text:#f5f5f7; --text-2:#a1a1a6; --text-3:#8a8a8e;
+    --sep:rgba(255,255,255,.09); --sep-strong:rgba(255,255,255,.16);
+    --accent:#b06bff; --accent-hover:#c38aff; --accent-soft:rgba(176,107,255,.16); --on-accent:#fff;
+    --green:#44eb99; --green-soft:rgba(68,235,153,.14);
+    --orange:#ffb340; --orange-soft:rgba(255,179,64,.14);
+    --red:#ff6961; --red-soft:rgba(255,105,97,.14);
+    --nav-bg:rgba(22,22,23,.72);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    --shadow-lg:0 30px 80px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:100%/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+h1,h2,h3{margin:0;font-weight:700}
+p{margin:0}
+[hidden]{display:none!important}
+.ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.2em}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px;border-radius:8px}
+
+/* ---------- Nav (translucent material) ---------- */
+.nav{position:sticky;top:0;z-index:50;background:var(--nav-bg);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--sep)}
+.nav-in{max-width:1120px;margin:0 auto;height:56px;padding:0 20px;display:flex;align-items:center;gap:8px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--text);font-weight:700;letter-spacing:-.01em;margin-right:auto;white-space:nowrap}
+.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#861be3,#44eb99);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;letter-spacing:-.03em}
+.nav-links{display:flex;gap:2px}
+.nav-link{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;color:var(--text-2);font-size:14px;font-weight:500;transition:background .2s var(--ease),color .2s var(--ease)}
+.nav-link:hover{color:var(--text);background:var(--surface-2)}
+.nav-link.active{color:var(--text);background:var(--surface-3)}
+.role-pill{display:flex;align-items:center;gap:6px;margin-left:8px;padding:6px 6px 6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--sep);font-size:13px;font-weight:600;white-space:nowrap}
+.role-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.role-pill.curator .dot{background:var(--accent)}
+.role-pill button{border:0;background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text-2)}
+@media (max-width:760px){.nav-link span{display:none}.nav-link{padding:8px 10px}.role-name{display:none}.brand b{display:none}}
+
+/* ---------- Layout ---------- */
+main{max-width:1120px;margin:0 auto;padding:32px 20px 120px}
+.narrow{max-width:760px;margin:0 auto}
+.view-enter{animation:viewIn .42s var(--ease-out) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.01em;margin-bottom:6px}
+.display{font-size:clamp(2.3rem,6vw,4.2rem);line-height:1.04;letter-spacing:-.035em;font-weight:800}
+.title{font-size:clamp(1.8rem,4vw,2.5rem);line-height:1.1;letter-spacing:-.025em;font-weight:750}
+.h2{font-size:1.35rem;line-height:1.2;letter-spacing:-.015em}
+.h3{font-size:1.05rem;letter-spacing:-.01em}
+.lead{font-size:1.1rem;line-height:1.5;color:var(--text-2);letter-spacing:-.005em}
+.muted{color:var(--text-2)}
+.small{font-size:13px;letter-spacing:.005em}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.spacer{flex:1}
+.stack>*+*{margin-top:16px}
+.section-head{display:flex;align-items:flex-end;gap:12px;margin:40px 0 14px}
+.section-head .h2{margin-right:auto}
+
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--sep)}
+.pad{padding:24px}
+@media (max-width:600px){.pad{padding:18px}main{padding:22px 16px 120px}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 18px;border-radius:999px;border:1px solid transparent;background:var(--surface-2);color:var(--text);font-size:15px;font-weight:600;letter-spacing:-.005em;cursor:pointer;white-space:nowrap;text-decoration:none;transition:transform .12s var(--ease),background .2s var(--ease),opacity .2s;-webkit-tap-highlight-color:transparent;user-select:none}
+.btn:hover{background:var(--surface-3)}
+.btn:active,.icon-btn:active,.mrow:active,.tap:active{transform:scale(.97);transition-duration:.08s}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.ghost{background:transparent;border-color:var(--sep-strong)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.danger{color:var(--red);background:var(--red-soft)}
+.btn.sm{min-height:32px;padding:0 12px;font-size:13px}
+.btn.lg{min-height:50px;padding:0 26px;font-size:17px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.icon-btn{width:34px;height:34px;display:inline-grid;place-items:center;border-radius:50%;border:0;background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:transform .12s,background .2s}
+.icon-btn:hover{background:var(--surface-3);color:var(--text)}
+.icon-btn.danger:hover{color:var(--red)}
+
+/* ---------- Chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--surface-2);color:var(--text-2);white-space:nowrap}
+.chip.green{background:var(--green-soft);color:var(--green)}
+.chip.accent{background:var(--accent-soft);color:var(--accent)}
+.chip.orange{background:var(--orange-soft);color:var(--orange)}
+.chip.red{background:var(--red-soft);color:var(--red)}
+.tag{display:inline-flex;padding:4px 11px;border-radius:999px;border:1px solid var(--sep-strong);font-size:13px;color:var(--text-2);background:transparent;cursor:default}
+button.tag{cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+button.tag:hover{border-color:var(--text-3)}
+button.tag.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+/* ---------- Forms ---------- */
+.field{display:block;margin-bottom:22px}
+.field:last-child{margin-bottom:0}
+.label{display:flex;align-items:baseline;gap:8px;font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-.005em}
+.label .opt{font-weight:500;font-size:12px;color:var(--text-3)}
+.label .req{color:var(--accent)}
+.input,.textarea,.select{width:100%;border:1px solid var(--sep-strong);background:var(--surface);border-radius:12px;padding:11px 14px;font-size:16px;line-height:1.45;transition:border-color .15s,box-shadow .15s;outline:none}
+.textarea{resize:vertical;min-height:108px}
+.input::placeholder,.textarea::placeholder{color:var(--text-3)}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.hint-row{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12px;color:var(--text-3)}
+.err{color:var(--red);font-weight:600;display:none}
+.invalid .input,.invalid .textarea{border-color:var(--red);box-shadow:0 0 0 4px var(--red-soft)}
+.invalid .err{display:inline}
+.check{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:15px}
+.switch{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:999px;background:var(--surface-3);position:relative;cursor:pointer;transition:background .25s var(--ease);flex:none;margin:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .32s cubic-bezier(.3,1.3,.5,1)}
+.switch:checked{background:var(--green)}
+.switch:checked::after{transform:translateX(18px)}
+.search{position:relative;flex:1;min-width:200px}
+.search .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.search .input{padding-left:38px;border-radius:999px;background:var(--surface)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:background .2s,color .2s}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+
+/* ---------- Entry ---------- */
+.hero{text-align:center;padding:40px 0 36px}
+.hero .lead{max-width:600px;margin:18px auto 0}
+.grad{background:linear-gradient(90deg,#861be3,#2fbf7d);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-color-scheme:dark){.grad{background-image:linear-gradient(90deg,#b06bff,#44eb99)}}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px auto 36px;max-width:900px}
+.flow div{padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--sep);font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center}
+.flow b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:13px;flex:none}
+@media (max-width:760px){.flow{grid-template-columns:1fr 1fr}}
+.entry-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;max-width:980px;margin:0 auto}
+@media (max-width:820px){.entry-grid{grid-template-columns:1fr}}
+.entry h2{font-size:1.5rem;letter-spacing:-.02em;margin:10px 0 6px}
+.entry-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--accent-soft);color:var(--accent)}
+.entry-ic.green{background:var(--green-soft);color:var(--green)}
+.plist{margin:18px 0 16px;display:grid;gap:8px}
+.pitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:14px;border:1px solid var(--sep);background:var(--surface-2);cursor:pointer;transition:background .2s,transform .12s}
+.pitem:hover{background:var(--surface-3)}
+.pitem:active{transform:scale(.985)}
+.pitem .meta{flex:1;min-width:0}
+.pitem .meta b{display:block;font-size:15px}
+.pitem .meta span{display:block;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Avatars ---------- */
+.ava{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;flex:none;letter-spacing:-.02em}
+.ava.lg{width:52px;height:52px;font-size:18px}
+.proj-ava{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:17px;flex:none;letter-spacing:-.03em}
+.ava-stack{display:flex}
+.ava-stack .ava{border:2px solid var(--surface);margin-left:-8px}
+.ava-stack .ava:first-child{margin-left:0}
+
+/* ---------- Project dashboard ---------- */
+.dash{display:grid;grid-template-columns:1fr 330px;gap:18px;align-items:start}
+@media (max-width:900px){.dash{grid-template-columns:1fr}}
+.ring{position:relative;width:132px;height:132px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.ring .track{stroke:var(--surface-2)}
+.ring .val{stroke:url(#ringGrad);transition:stroke-dashoffset .9s var(--ease-out)}
+.ring .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring .num b{font-size:30px;letter-spacing:-.03em;line-height:1}
+.ring .num span{font-size:12px;color:var(--text-2);margin-top:3px}
+.bar{height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#861be3,#44eb99);transition:width .7s var(--ease-out)}
+
+.modules{display:grid;gap:10px}
+.mrow{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--sep);box-shadow:var(--shadow-sm);color:var(--text);transition:transform .12s var(--ease),box-shadow .2s,border-color .2s}
+a.mrow:hover{box-shadow:var(--shadow);border-color:var(--sep-strong)}
+.mrow.current{border-color:color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-sm)}
+.mrow.locked{opacity:.55;cursor:not-allowed}
+.mrow.locked:active{transform:none}
+.mnum{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;background:var(--surface-2);color:var(--text-2);flex:none}
+.mrow.done .mnum{background:var(--green);color:#04341f}
+.mrow.current .mnum{background:var(--accent);color:#fff}
+.mrow .mt{flex:1;min-width:0}
+.mrow .mt b{display:block;font-size:16px;letter-spacing:-.01em}
+.mrow .mt span{display:block;font-size:13px;color:var(--text-2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .chev{color:var(--text-3)}
+
+.badges{display:flex;flex-wrap:wrap;gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:6px;width:84px;text-align:center;font-size:11.5px;font-weight:600;color:var(--text-2);line-height:1.2}
+.badge .medal{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:var(--surface-2);filter:grayscale(1);opacity:.45;transition:filter .4s,opacity .4s,transform .4s var(--ease-out)}
+.badge.on{color:var(--text)}
+.badge.on .medal{filter:none;opacity:1;background:linear-gradient(145deg,var(--accent-soft),var(--green-soft));box-shadow:inset 0 0 0 1px var(--sep)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--sep);font-size:14px}
+.kv:first-child{border-top:0}
+.kv span{color:var(--text-2)}
+
+/* ---------- Module ---------- */
+.back{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:500;margin-bottom:18px}
+.stepper{display:flex;gap:6px;margin:18px 0 22px}
+.stepper a,.stepper span{flex:1;height:5px;border-radius:999px;background:var(--surface-3)}
+.stepper .done{background:var(--green)}
+.stepper .cur{background:var(--accent)}
+.task{display:flex;gap:12px;padding:16px 18px;border-radius:var(--r);background:var(--accent-soft);color:var(--text);margin-bottom:18px;font-size:15px}
+.task .ic{color:var(--accent);margin-top:2px}
+.ro{white-space:pre-wrap;padding:12px 14px;border-radius:12px;background:var(--surface-2);font-size:15px;min-height:46px}
+.ro .none{color:var(--text-3);font-style:italic}
+.actionbar{position:sticky;bottom:16px;z-index:20;margin-top:18px;display:flex;align-items:center;gap:12px;padding:10px 10px 10px 18px;border-radius:999px;background:var(--nav-bg);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);border:1px solid var(--sep);box-shadow:var(--shadow)}
+.savestate{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);margin-right:auto;min-width:0}
+.savestate .ic{color:var(--green)}
+.savestate.saving .ic{color:var(--text-3)}
+@media (max-width:560px){.actionbar{border-radius:20px;flex-wrap:wrap;padding:12px}.actionbar .btn{flex:1}}
+.comment{display:flex;gap:12px;padding:14px 0;border-top:1px solid var(--sep)}
+.comment:first-child{border-top:0;padding-top:0}
+.comment .body{flex:1;min-width:0}
+.comment .who{font-size:13px;font-weight:700}
+.comment .who time{font-weight:400;color:var(--text-3);margin-left:6px}
+.comment p{white-space:pre-wrap;font-size:15px;margin-top:2px}
+.ver{border-top:1px solid var(--sep);padding:12px 0}
+.ver:first-child{border-top:0;padding-top:0}
+.ver summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;font-size:14px;font-weight:600}
+.ver summary::-webkit-details-marker{display:none}
+.ver .vbody{margin-top:10px;display:grid;gap:8px;font-size:14px}
+.ver .vbody div{padding:10px 12px;background:var(--surface-2);border-radius:10px;white-space:pre-wrap}
+.ver .vbody small{display:block;color:var(--text-3);font-weight:600;margin-bottom:2px;white-space:normal}
+
+/* ---------- One-pager ---------- */
+.op-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.onepager{max-width:860px;margin:0 auto;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);border:1px solid var(--sep);padding:56px 60px;overflow:hidden;position:relative}
+.onepager::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,#861be3,#44eb99)}
+@media (max-width:640px){.onepager{padding:30px 22px;border-radius:var(--r)}}
+.op-top{display:flex;gap:18px;align-items:flex-start}
+.op-top h1{font-size:clamp(2rem,5vw,3rem);letter-spacing:-.035em;line-height:1.04;font-weight:800}
+.op-top .lead{margin-top:10px}
+.op-meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;padding-top:18px;border-top:1px solid var(--sep);font-size:13px;color:var(--text-2)}
+.op-meta b{color:var(--text)}
+.op-summary{margin-top:28px;padding:22px 24px;border-radius:var(--r);background:linear-gradient(135deg,var(--accent-soft),var(--green-soft));font-size:17px;line-height:1.5;letter-spacing:-.01em}
+.op-summary small{display:block;font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase}
+.op-team{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}
+.op-team .m{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--surface-2)}
+.op-team .m b{display:block;font-size:14px}
+.op-team .m span{display:block;font-size:12px;color:var(--text-2)}
+.op-h{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin:36px 0 4px}
+.op-sec{margin-top:34px;break-inside:avoid}
+.op-sec-h{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--sep);margin-bottom:16px}
+.op-sec-h .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);font-size:13px;font-weight:700;color:var(--text-2);flex:none}
+.op-sec-h h2{font-size:1.35rem;letter-spacing:-.02em;margin-right:auto}
+.op-dl{display:grid;grid-template-columns:200px 1fr;gap:14px 24px;margin:0}
+.op-dl dt{font-size:13px;font-weight:600;color:var(--text-2);padding-top:2px}
+.op-dl dd{margin:0;font-size:16px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.op-dl dd.dash{color:var(--text-3)}
+@media (max-width:640px){.op-dl{grid-template-columns:1fr;gap:2px}.op-dl dd{margin-bottom:12px}}
+.empty-sec{display:flex;gap:14px;align-items:center;padding:20px;border:1.5px dashed var(--sep-strong);border-radius:var(--r);color:var(--text-2)}
+.empty-sec .ic{width:26px;height:26px;color:var(--text-3)}
+.empty-sec b{display:block;color:var(--text);font-size:15px}
+.empty-sec span{font-size:14px}
+.op-foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--sep);font-size:12px;color:var(--text-3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.banner{display:flex;gap:10px;align-items:center;max-width:860px;margin:0 auto 16px;padding:12px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--sep);font-size:14px;color:var(--text-2)}
+
+/* ---------- Curator / lists ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr}}
+.stat{padding:18px 20px}
+.stat b{display:block;font-size:2rem;letter-spacing:-.03em;line-height:1.1}
+.stat span{font-size:13px;color:var(--text-2)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.team{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.2fr) auto;gap:18px;align-items:center;padding:16px 18px;border-top:1px solid var(--sep)}
+.team:first-child{border-top:0}
+.team .nm b{display:block;font-size:16px;letter-spacing:-.01em;color:var(--text)}
+.team .nm span{font-size:13px;color:var(--text-2)}
+@media (max-width:760px){.team{grid-template-columns:1fr}}
+.empty{padding:48px 20px;text-align:center;color:var(--text-2)}
+.empty .ic{width:40px;height:40px;color:var(--text-3);margin-bottom:10px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.gcard{display:flex;flex-direction:column;overflow:hidden;transition:transform .35s var(--ease-out),box-shadow .35s}
+.gcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.gcover{height:108px;position:relative;display:flex;align-items:flex-end;padding:14px 18px}
+.gcover .proj-ava{box-shadow:0 8px 20px rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.7)}
+.gbody{padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.gbody p{font-size:14px;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.like{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--sep-strong);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,color .2s,background .2s}
+.like:active{transform:scale(.92)}
+.like.on{color:#ff2d55;background:rgba(255,45,85,.1);border-color:transparent}
+.like.on .ic{fill:currentColor}
+.like.pop .ic{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.6)}100%{transform:scale(1)}}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.person{padding:18px}
+.person .top{display:flex;gap:12px;align-items:center}
+.person .top b{display:block;font-size:16px}
+.person .top span{font-size:13px;color:var(--text-2)}
+.skills{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.skill{display:inline-flex;align-items:center;gap:6px;padding:4px 5px 4px 11px;border-radius:999px;background:var(--surface-2);font-size:13px;font-weight:500}
+.skill button{border:0;border-radius:999px;background:var(--surface);padding:1px 8px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;transition:background .2s,color .2s,transform .12s}
+.skill button:active{transform:scale(.9)}
+.skill button.on{background:var(--accent);color:#fff}
+.mod-admin{display:flex;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--sep)}
+.mod-admin:first-child{border-top:0}
+.fedit{padding:14px;border-radius:14px;background:var(--surface-2);margin-bottom:10px;display:grid;gap:8px}
+.fedit .row .input,.fedit .row .select{background:var(--surface)}
+.denied{max-width:480px;margin:60px auto;text-align:center}
+.denied .ic{width:48px;height:48px;color:var(--text-3)}
+
+/* ---------- Sheet (spring-driven, draggable) ---------- */
+.sheet-root{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:720px){.sheet-root{align-items:center;padding:24px}}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.36);opacity:0}
+.sheet{position:relative;width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--shadow-lg);will-change:transform;padding-bottom:env(safe-area-inset-bottom)}
+.sheet.wide{max-width:720px}
+@media (min-width:720px){.sheet{border-radius:var(--r-lg);max-height:86vh}}
+.sheet-grab{display:flex;justify-content:center;padding:8px 0 0;touch-action:none;cursor:grab}
+.sheet-grab span{width:38px;height:5px;border-radius:999px;background:var(--surface-3)}
+.sheet-head{display:flex;align-items:center;gap:12px;padding:8px 20px 12px;touch-action:none;cursor:grab}
+.sheet.dragging .sheet-head,.sheet.dragging .sheet-grab{cursor:grabbing}
+.sheet-head h2{font-size:1.25rem;letter-spacing:-.02em;margin-right:auto}
+.sheet-body{padding:6px 20px 20px;overflow:auto;overscroll-behavior:contain}
+.sheet-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--sep)}
+.celebrate{text-align:center;padding:10px 0 6px}
+.celebrate .medal{width:92px;height:92px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:44px;background:linear-gradient(145deg,var(--accent-soft),var(--green-soft));animation:medal .7s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes medal{from{transform:scale(.4) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- Toast ---------- */
+.toast{position:fixed;left:50%;bottom:24px;z-index:200;display:flex;align-items:center;gap:14px;padding:10px 10px 10px 18px;border-radius:999px;background:rgba(29,29,31,.88);color:#fff;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:var(--shadow-lg);font-size:14px;font-weight:500;transform:translate(-50%,140%);opacity:0;transition:transform .45s var(--ease-out),opacity .3s;max-width:calc(100vw - 32px);pointer-events:none}
+.toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.toast button{border:0;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;padding:6px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.toast:not(:has(button)){padding-right:18px}
+@media (prefers-color-scheme:dark){.toast{background:rgba(58,58,60,.9)}}
+
+footer{max-width:1120px;margin:0 auto;padding:0 20px 40px;font-size:12px;color:var(--text-3);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+footer button{border:0;background:none;color:var(--text-2);text-decoration:underline;cursor:pointer;font-size:12px;padding:0}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .view-enter{animation:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .nav,.actionbar,.toast{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .toast{background:#1d1d1f}
+}
+@media (prefers-contrast:more){
+  :root{--sep:rgba(0,0,0,.3);--sep-strong:rgba(0,0,0,.5);--text-2:#3a3a3c}
+}
+@media print{
+  @page{margin:14mm}
+  body{background:#fff;color:#000}
+  .nav,.op-toolbar,.toast,footer,.banner,.no-print,.sheet-root{display:none!important}
+  main{padding:0;max-width:none}
+  .onepager{box-shadow:none;border:0;padding:0;max-width:none;background:#fff}
+  .onepager::before{display:none}
+  .op-summary{background:#f3f3f6!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .op-team .m{background:#f3f3f6}
+  .view-enter{animation:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#861be3"/><stop offset="1" stop-color="#44eb99"/></linearGradient></defs></svg>
+<div id="nav"></div>
+<main id="app" aria-live="polite"></main>
+<footer id="footer"></footer>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   Launch Lab 21 — клиентское приложение без бэкенда.
+   Все данные в localStorage, работает офлайн.
+   ========================================================= */
+const LS_KEY = 'll21.state.v1';
+const SESSION_KEY = 'll21.session.v1';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+/* ---------- Utils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9);
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return f[a > 10 && a < 20 ? 2 : b > 1 && b < 5 ? 1 : b === 1 ? 0 : 2]; };
+const fmtDate = (ts) => new Intl.DateTimeFormat('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}).format(ts);
+const rel = (ts) => {
+  if (!ts) return '—';
+  const s = (Date.now() - ts) / 1000;
+  if (s < 60) return 'только что';
+  if (s < 3600) return Math.floor(s / 60) + ' мин назад';
+  if (s < 86400) return Math.floor(s / 3600) + ' ч назад';
+  return fmtDate(ts);
+};
+const hue = (str) => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
+const initials = (name) => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
+const ava = (name, cls = '') => `<span class="ava ${cls}" style="background:hsl(${hue(name)} 55% 52%)" aria-hidden="true">${esc(initials(name))}</span>`;
+const projAva = (p, style = '') => `<span class="proj-ava" style="background:linear-gradient(135deg,hsl(${hue(p.name)} 70% 55%),hsl(${(hue(p.name) + 60) % 360} 70% 50%));${style}" aria-hidden="true">${esc(initials(p.name))}</span>`;
+const splitList = (s) => String(s || '').split(',').map(x => x.trim()).filter(Boolean);
+
+const ICON = {
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  chevR:'<path d="M9 5l7 7-7 7"/>', chevL:'<path d="M15 5l-7 7 7 7"/>',
+  doc:'<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2A6.5 6.5 0 0 1 21.5 20"/>',
+  grid:'<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  heart:'<path d="M12 20s-7.5-4.6-9.2-9.3C1.7 7.4 4 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.1 0 5.4 2.9 4.3 6.2C19.5 15.4 12 20 12 20z"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  print:'<path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/>',
+  link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>',
+  trash:'<path d="M4 7h16M10 7V4.5h4V7M6 7l1 13h10l1-13"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  star:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',
+  bubble:'<path d="M4 5.5h16v11H9l-5 4z"/>',
+  up:'<path d="M6 15l6-6 6 6"/>', down:'<path d="M6 9l6 6 6-6"/>',
+  out:'<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h9"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
+  bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  restore:'<path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4v4h4"/>',
+  send:'<path d="M4 12l16-8-6 16-3-7z"/>',
+};
+const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ''}</svg>`;
+
+/* ---------- Seed data ---------- */
+function seed() {
+  const now = Date.now(), H = 3600e3;
+  const modules = [
+    { id:'m_problem', title:'Проблема и аудитория', badge:'Исследователь', emoji:'🔍',
+      task:'Сформулируйте проблему так, чтобы её понял человек вне вашей команды. Опирайтесь на факты и живые разговоры с пользователями.',
+      fields:[
+        { id:'problem', label:'Какую проблему вы решаете?', placeholder:'Например: студенты тратят 3+ часа в неделю на поиск команды для учебных проектов…', type:'textarea', required:true },
+        { id:'audience', label:'Кто страдает от этой проблемы?', placeholder:'Опишите конкретный сегмент: кто это, сколько им лет, в какой ситуации они сталкиваются с проблемой…', type:'textarea', required:true },
+        { id:'today', label:'Как они справляются с этим сегодня?', placeholder:'Какие обходные пути и конкуренты используют сейчас и чем они неудобны…', type:'textarea', required:false },
+      ]},
+    { id:'m_solution', title:'Решение и MVP', badge:'Строитель', emoji:'🛠️',
+      task:'Опишите, как продукт снимает боль из первого модуля, и что именно войдёт в первую версию.',
+      fields:[
+        { id:'solution', label:'Как ваш продукт решает проблему?', placeholder:'Одним-двумя абзацами: что делает пользователь и что он получает на выходе…', type:'textarea', required:true },
+        { id:'mvp', label:'Что входит в MVP?', placeholder:'Перечислите 3–5 ключевых функций первой версии. Всё остальное — потом…', type:'textarea', required:true },
+        { id:'edge', label:'Почему это лучше существующих решений?', placeholder:'Ваше главное отличие: скорость, цена, удобство, данные…', type:'textarea', required:false },
+      ]},
+    { id:'m_market', title:'Рынок и первые клиенты', badge:'Стратег', emoji:'📈',
+      task:'Покажите, что у продукта есть рынок и понятный путь к первым платящим клиентам.',
+      fields:[
+        { id:'market', label:'Размер и сегмент рынка', placeholder:'Сколько потенциальных клиентов в Узбекистане / регионе? На какой сегмент заходите первым…', type:'textarea', required:true },
+        { id:'first', label:'Кто станут первыми 10 клиентами и где их найти?', placeholder:'Конкретные каналы: Telegram-чаты, вузы, партнёры, личные контакты…', type:'textarea', required:true },
+        { id:'money', label:'Как вы будете зарабатывать?', placeholder:'Подписка, комиссия, B2B-лицензия… и примерная цена', type:'text', required:false },
+      ]},
+    { id:'m_team', title:'Команда и следующие шаги', badge:'Лидер', emoji:'🚀',
+      task:'Расскажите, что уже сделано, и чего вы хотите достичь за время программы.',
+      fields:[
+        { id:'done', label:'Что уже сделано?', placeholder:'Интервью, прототип, первые пользователи, метрики…', type:'textarea', required:true },
+        { id:'next', label:'Цели на ближайшие 3 месяца', placeholder:'2–3 измеримые цели: например, 100 активных пользователей и 3 пилота…', type:'textarea', required:true },
+        { id:'ask', label:'Что вам нужно от инкубатора?', placeholder:'Менторы, доступ к партнёрам, инвестиции, экспертиза…', type:'text', required:false },
+      ]},
+  ];
+  const member = (name, role, skills, contact, open = false) => ({ id: uid('u'), name, role, skills, contact, openToProjects: open, endorsements: {} });
+
+  const qatnovAnswers = {
+    m_problem:{ problem:'Жители Ташкента теряют в среднем 40 минут в день, ожидая автобусы без понятного расписания. Реальное время прибытия нигде не отображается.', audience:'Студенты и офисные сотрудники 17–35 лет, которые ежедневно ездят на общественном транспорте и не могут позволить себе такси.', today:'Выходят заранее «с запасом», спрашивают в Telegram-чатах, пользуются картами, где данные об автобусах устаревшие.' },
+    m_solution:{ solution:'Мобильное веб-приложение показывает автобусы на карте в реальном времени и строит маршрут с учётом пересадок и пробок.', mvp:'• Карта автобусов в реальном времени\n• Построение маршрута A → B\n• Уведомление «выходите через 5 минут»\n• Избранные остановки', edge:'Используем GPS-данные перевозчика напрямую, поэтому точность прибытия ±1 минута против ±10 у карт.' },
+    m_market:{ market:'Более 1,2 млн пассажиров общественного транспорта в Ташкенте ежедневно. Первый сегмент — студенты 6 крупнейших вузов.', first:'Амбассадоры в студенческих советах, пилот с двумя маршрутами у ТТЗ, посты в студенческих Telegram-каналах.', money:'B2G-лицензия для транспортной компании + реклама на остановках' },
+    m_team:{ done:'Провели 42 интервью, собрали кликабельный прототип, договорились о тестовом доступе к GPS 12 автобусов.', next:'1) 1 000 активных пользователей\n2) Пилотный договор с перевозчиком\n3) Точность прогноза 90%+', ask:'Интро к хокимияту и ментор по B2G-продажам' },
+  };
+  const hist = (vals, at) => [{ at, values: clone(vals) }];
+
+  const projects = [
+    { id:'p_qatnov', name:'Qatnov', description:'Автобусы Ташкента в реальном времени: когда выходить из дома и как доехать быстрее.',
+      tags:['Mobility','GovTech'], published:true, likes:14, createdAt: now - 72*H, updatedAt: now - 2*H,
+      members:[ member('Азиз Каримов','Frontend',['React','UI-дизайн'],'@aziz_k',false), member('Малика Юсупова','Product',['Исследования','Питчинг'],'@malika_y',true), member('Тимур Рашидов','Backend',['Node.js','PostgreSQL'],'@timur_dev',true) ],
+      answers: qatnovAnswers,
+      submitted:{ m_problem: now-60*H, m_solution: now-40*H, m_market: now-20*H, m_team: now-2*H },
+      history:{ m_problem:[{at:now-66*H,values:{...qatnovAnswers.m_problem, problem:'Жители Ташкента долго ждут автобусы.'}},{at:now-60*H,values:clone(qatnovAnswers.m_problem)}], m_solution:hist(qatnovAnswers.m_solution,now-40*H), m_market:hist(qatnovAnswers.m_market,now-20*H), m_team:hist(qatnovAnswers.m_team,now-2*H) },
+      review:{ m_problem:'approved', m_solution:'approved', m_market:'changes', m_team:'pending' },
+      comments:{ m_problem:[{id:uid('c'),author:'Куратор',role:'curator',text:'Отличная конкретика про 40 минут. Добавьте источник цифры в one-pager.',at:now-58*H},{id:uid('c'),author:'Qatnov',role:'participant',text:'Спасибо! Это медиана из наших 42 интервью.',at:now-57*H}], m_market:[{id:uid('c'),author:'Куратор',role:'curator',text:'Рынок оценён широко. Сузьте до сегмента, который реально достижим за 3 месяца.',at:now-18*H}] } },
+    { id:'p_studymate', name:'StudyMate', description:'Помогает студентам School 21 находить команду под учебные и пет-проекты по навыкам.',
+      tags:['EdTech','Community'], published:false, likes:5, createdAt: now - 30*H, updatedAt: now - 5*H,
+      members:[ member('Дилноза Ахмедова','Fullstack',['Vue','Python'],'@dilnoza_a',true), member('Бекзод Турсунов','Design',['Figma','UI-дизайн'],'@bekzod_t',true) ],
+      answers:{ m_problem:{ problem:'Студенты School 21 тратят несколько дней, чтобы собрать команду с нужными навыками для группового проекта.', audience:'Студенты первого и второго года обучения, которые ещё не знают людей из других потоков.', today:'' }, m_solution:{ solution:'Каталог студентов с тегами навыков и статусом «ищу команду».', mvp:'', edge:'' } },
+      submitted:{ m_problem: now-8*H }, history:{ m_problem:[{at:now-8*H,values:{ problem:'Студенты School 21 тратят несколько дней, чтобы собрать команду с нужными навыками для группового проекта.', audience:'Студенты первого и второго года обучения, которые ещё не знают людей из других потоков.', today:'' }}] },
+      review:{ m_problem:'pending' }, comments:{} },
+    { id:'p_mednavbat', name:'MedNavbat', description:'Электронная очередь в семейные поликлиники.',
+      tags:['HealthTech'], published:false, likes:0, createdAt: now - 3*H, updatedAt: now - 3*H,
+      members:[ member('Шахзод Алиев','Founder',['Продажи','Excel'],'@shahzod_a',false) ],
+      answers:{}, submitted:{}, history:{}, review:{}, comments:{} },
+  ];
+  return { version:1, modules, projects };
+}
+
+/* ---------- Store ---------- */
+function load() {
+  try { const raw = localStorage.getItem(LS_KEY); if (raw) { const s = JSON.parse(raw); if (s && Array.isArray(s.modules) && Array.isArray(s.projects)) return s; } } catch (e) {}
+  return seed();
+}
+let S = load();
+let session = (() => { try { return JSON.parse(localStorage.getItem(SESSION_KEY)) || {}; } catch (e) { return {}; } })();
+session.liked ||= []; session.endorsed ||= [];
+function save(silent) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); return true; }
+  catch (e) { if (!silent) toast('Не удалось сохранить: хранилище браузера недоступно'); return false; }
+}
+function saveSession() { try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) {} }
+save(true);
+
+const getP = (id) => S.projects.find(p => p.id === id);
+const getM = (id) => S.modules.find(m => m.id === id);
+function normalize(p) { for (const k of ['answers','submitted','history','review','comments']) p[k] ||= {}; p.members ||= []; p.tags ||= []; return p; }
+S.projects.forEach(normalize);
+
+const isDone = (p, m) => !!p.submitted[m.id];
+const doneCount = (p) => S.modules.filter(m => isDone(p, m)).length;
+const firstIncomplete = (p) => S.modules.findIndex(m => !isDone(p, m));
+function moduleStatus(p, i) {
+  const m = S.modules[i];
+  if (isDone(p, m)) return 'done';
+  return i === firstIncomplete(p) ? 'current' : 'locked';
+}
+const hasContent = (p, m) => m.fields.some(f => String(p.answers[m.id]?.[f.id] || '').trim());
+const pendingReviews = (p) => S.modules.filter(m => isDone(p, m) && (p.review[m.id] || 'pending') === 'pending').length;
+const isCurator = () => session.role === 'curator';
+const isOwn = (p) => session.role === 'participant' && session.projectId === p.id;
+function canSee(p, kind = 'full') {
+  if (isCurator() || isOwn(p)) return true;
+  return kind === 'onepager' && p.published;
+}
+const lastVersion = (p, m) => { const h = p.history[m.id]; return h && h.length ? h[h.length - 1] : null; };
+const changedSinceSubmit = (p, m) => {
+  const v = lastVersion(p, m); if (!v || !isDone(p, m)) return false;
+  return m.fields.some(f => String(p.answers[m.id]?.[f.id] || '') !== String(v.values[f.id] || ''));
+};
+const reviewChip = (st) => ({ approved:'<span class="chip green">'+icon('check')+'Принято куратором</span>', changes:'<span class="chip orange">Нужна доработка</span>', pending:'<span class="chip">На проверке</span>' }[st] || '');
+
+/* ---------- Spring physics (Apple: damping ratio + response) ---------- */
+function spring({ from, to, velocity = 0, response = .35, damping = 1, onUpdate, onDone }) {
+  if (reduceMotion.matches) { onUpdate(to); onDone && onDone(); return { stop() {} }; }
+  const k = Math.pow(2 * Math.PI / response, 2), c = 4 * Math.PI * damping / response;
+  let x = from, v = velocity, last = performance.now(), raf = 0, stopped = false;
+  const step = (now) => {
+    if (stopped) return;
+    const dt = Math.min(.064, (now - last) / 1000); last = now;
+    const n = 4, h = dt / n;
+    for (let i = 0; i < n; i++) { const a = -k * (x - to) - c * v; v += a * h; x += v * h; }
+    if (Math.abs(x - to) < .5 && Math.abs(v) < 12) { onUpdate(to); onDone && onDone(); return; }
+    onUpdate(x); raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+  return { stop() { stopped = true; cancelAnimationFrame(raf); } };
+}
+const project = (v, d = .998) => (v / 1000) * d / (1 - d);
+const rubberband = (o, dim, c = .55) => (o * dim * c) / (dim + c * Math.abs(o));
+
+/* ---------- Sheet ---------- */
+const Sheet = { root:null, panel:null, scrim:null, y:0, h:1, anim:null, target:0, onClose:null, lastFocus:null };
+function setSheetY(y) {
+  Sheet.y = y;
+  Sheet.panel.style.transform = `translate3d(0,${y}px,0)`;
+  Sheet.scrim.style.opacity = String(Math.max(0, Math.min(1, 1 - y / Sheet.h)));
+}
+function animSheet(to, velocity, opts, onDone) {
+  Sheet.anim && Sheet.anim.stop();
+  Sheet.target = to;
+  Sheet.anim = spring({ from: Sheet.y, to, velocity, ...opts, onUpdate: setSheetY, onDone });
+}
+function openSheet({ title, body, footer = '', wide = false, onMount, onClose }) {
+  if (Sheet.root) removeSheetNow();
+  const root = document.createElement('div');
+  root.className = 'sheet-root';
+  root.innerHTML = `<div class="scrim" data-action="close-sheet"></div>
+    <div class="sheet ${wide ? 'wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+      <div class="sheet-grab" data-grab><span></span></div>
+      <div class="sheet-head" data-grab><h2>${esc(title)}</h2><button class="icon-btn" data-action="close-sheet" aria-label="Закрыть">${icon('x')}</button></div>
+      <div class="sheet-body">${body}</div>
+      ${footer ? `<div class="sheet-foot">${footer}</div>` : ''}
+    </div>`;
+  document.body.appendChild(root);
+  Object.assign(Sheet, { root, panel: root.querySelector('.sheet'), scrim: root.querySelector('.scrim'), onClose, lastFocus: document.activeElement });
+  Sheet.h = Math.max(240, innerHeight - Sheet.panel.getBoundingClientRect().top);
+  setSheetY(Sheet.h);
+  animSheet(0, 0, { damping: 1, response: .38 });
+  onMount && onMount(Sheet.panel);
+  setTimeout(() => { if (!Sheet.panel) return; const f = Sheet.panel.querySelector('.sheet-body input:not([type=checkbox]),.sheet-body textarea') || Sheet.panel.querySelector('.sheet-foot .primary'); f && f.focus({ preventScroll: true }); }, 80);
+}
+function closeSheet(velocity = 0) {
+  if (!Sheet.root) return;
+  animSheet(Sheet.h, velocity, { damping: 1, response: .3 }, removeSheetNow);
+}
+function removeSheetNow() {
+  if (!Sheet.root) return;
+  Sheet.anim && Sheet.anim.stop();
+  Sheet.root.remove();
+  const cb = Sheet.onClose, lf = Sheet.lastFocus;
+  Object.assign(Sheet, { root:null, panel:null, scrim:null, onClose:null, lastFocus:null });
+  cb && cb();
+  lf && lf.focus && document.contains(lf) && lf.focus({ preventScroll: true });
+}
+// Drag-to-dismiss: 1:1 tracking, rubber-band, velocity projection, interruptible
+document.addEventListener('pointerdown', (e) => {
+  const g = e.target.closest('[data-grab]');
+  if (!g || !Sheet.panel || e.button > 0 || e.target.closest('button')) return;
+  Sheet.anim && Sheet.anim.stop();
+  const st = { id: e.pointerId, y0: e.clientY, base: Sheet.y, samples: [{ t: e.timeStamp, y: e.clientY }], active: false };
+  const move = (ev) => {
+    if (ev.pointerId !== st.id || !Sheet.panel) return;
+    const dy = ev.clientY - st.y0;
+    if (!st.active) { if (Math.abs(dy) < 6) return; st.active = true; try { g.setPointerCapture(st.id); } catch (_) {} Sheet.panel.classList.add('dragging'); }
+    let y = st.base + dy;
+    if (y < 0) y = -rubberband(-y, Sheet.h);
+    setSheetY(y);
+    st.samples.push({ t: ev.timeStamp, y: ev.clientY }); if (st.samples.length > 8) st.samples.shift();
+  };
+  const up = (ev) => {
+    if (ev.pointerId !== st.id) return;
+    removeEventListener('pointermove', move); removeEventListener('pointerup', up); removeEventListener('pointercancel', up);
+    if (!Sheet.panel) return;
+    Sheet.panel.classList.remove('dragging');
+    if (!st.active) { if (Sheet.y !== Sheet.target) Sheet.target === Sheet.h ? closeSheet() : animSheet(0, 0, { damping: 1, response: .35 }); return; }
+    const last = st.samples[st.samples.length - 1];
+    const first = st.samples.find(s => last.t - s.t < 100) || st.samples[0];
+    const v = (last.y - first.y) / Math.max(1, last.t - first.t) * 1000;
+    if (Sheet.y + project(v) > Sheet.h * .45) closeSheet(v);
+    else animSheet(0, v, { damping: .8, response: .3 });
+  };
+  addEventListener('pointermove', move); addEventListener('pointerup', up); addEventListener('pointercancel', up);
+});
+
+/* ---------- Toast ---------- */
+function toast(msg, opts = {}) {
+  const t = $('#toast');
+  clearTimeout(toast.tm);
+  t.innerHTML = `<span>${esc(msg)}</span>${opts.label ? `<button type="button">${esc(opts.label)}</button>` : ''}`;
+  if (opts.label) t.querySelector('button').onclick = () => { hide(); opts.action(); };
+  requestAnimationFrame(() => t.classList.add('show'));
+  const hide = () => t.classList.remove('show');
+  toast.tm = setTimeout(hide, opts.label ? 6000 : 2600);
+}
+
+/* ---------- Clipboard + share encoding ---------- */
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok;
+  }
+}
+function encodeShare(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj)); let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decodeShare(str) {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+/* ---------- One-pager data (shared by live view & public link) ---------- */
+function onePagerData(p) {
+  return {
+    name: p.name, description: p.description, tags: p.tags, at: Date.now(),
+    members: p.members.map(m => ({ name: m.name, role: m.role })),
+    total: S.modules.length, done: doneCount(p),
+    sections: S.modules.map(m => ({
+      title: m.title, status: isDone(p, m) ? 'done' : hasContent(p, m) ? 'draft' : 'empty',
+      items: m.fields.map(f => [f.label, String(p.answers[m.id]?.[f.id] || '').trim()]),
+    })),
+  };
+}
+function onePagerHTML(d) {
+  const summary = d.sections.slice(0, 2).map(s => (s.items.find(i => i[1]) || [])[1]).filter(Boolean);
+  const filled = d.sections.filter(s => s.status !== 'empty').length;
+  return `<article class="onepager" id="onepager">
+    <div class="op-top">
+      <div style="flex:1;min-width:0">
+        <div class="eyebrow">One-pager · Launch Lab 21</div>
+        <h1>${esc(d.name)}</h1>
+        ${d.description ? `<p class="lead">${esc(d.description)}</p>` : `<p class="lead" style="color:var(--text-3)">Описание проекта пока не добавлено</p>`}
+        ${d.tags?.length ? `<div class="row wrap" style="margin-top:14px;gap:6px">${d.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>
+    <div class="op-meta">
+      <span>Модулей пройдено: <b>${d.done} из ${d.total}</b></span>
+      <span>Разделов с ответами: <b>${filled} из ${d.sections.length}</b></span>
+      <span>Команда: <b>${d.members.length} ${plural(d.members.length, ['человек','человека','человек'])}</b></span>
+    </div>
+    ${summary.length ? `<div class="op-summary"><small>Суть проекта</small>${summary.map(esc).join('<br><br>')}</div>` : ''}
+    <div class="op-h">Команда</div>
+    ${d.members.length ? `<div class="op-team">${d.members.map(m => `<div class="m">${ava(m.name)}<div><b>${esc(m.name)}</b><span>${esc(m.role || 'Участник')}</span></div></div>`).join('')}</div>` : `<p class="muted small" style="margin-top:8px">Состав команды не указан</p>`}
+    ${d.sections.map((s, i) => `
+      <section class="op-sec">
+        <div class="op-sec-h"><span class="n">${i + 1}</span><h2>${esc(s.title)}</h2>
+          ${s.status === 'done' ? '<span class="chip green">'+icon('check')+'Готово</span>' : s.status === 'draft' ? '<span class="chip orange">Черновик</span>' : '<span class="chip">Пусто</span>'}
+        </div>
+        ${s.status === 'empty'
+          ? `<div class="empty-sec">${icon('doc')}<div><b>Раздел пока не заполнен</b><span>Он соберётся автоматически, как только команда ответит в модуле «${esc(s.title)}».</span></div></div>`
+          : `<dl class="op-dl">${s.items.map(([l, v]) => `<dt>${esc(l)}</dt><dd class="${v ? '' : 'dash'}">${v ? esc(v) : '—'}</dd>`).join('')}</dl>`}
+      </section>`).join('')}
+    <div class="op-foot"><span>Собрано автоматически из ответов в модулях — без ручного переписывания.</span><span>${fmtDate(d.at)}</span></div>
+  </article>`;
+}
+
+/* ---------- Views ---------- */
+function navHTML() {
+  const logo = `<a class="brand" href="#/"><span class="logo">21</span><b>Launch Lab 21</b></a>`;
+  if (!session.role) return `<header class="nav"><div class="nav-in">${logo}</div></header>`;
+  const pid = session.projectId;
+  const items = isCurator()
+    ? [['#/curator','Команды','users'], ['#/modules','Модули','grid'], ['#/gallery','Галерея','star'], ['#/people','Люди','search']]
+    : [[`#/p/${pid}`,'Мой проект','flag'], [`#/p/${pid}/onepager`,'One-pager','doc'], ['#/gallery','Галерея','star'], ['#/people','Люди','search']];
+  const h = location.hash || '#/';
+  const active = items.map(i => i[0]).filter(href => h === href || h.startsWith(href + '/')).sort((a, b) => b.length - a.length)[0];
+  const who = isCurator() ? 'Куратор' : (getP(pid)?.name || 'Участник');
+  return `<header class="nav"><nav class="nav-in" aria-label="Основная навигация">${logo}
+    <div class="nav-links">${items.map(([href, label, ic]) => `<a class="nav-link ${href === active ? 'active' : ''}" href="${href}" ${href === active ? 'aria-current="page"' : ''}>${icon(ic)}<span>${label}</span></a>`).join('')}</div>
+    <div class="role-pill ${isCurator() ? 'curator' : ''}"><i class="dot"></i><span class="role-name">${esc(who)}</span><button data-action="logout" title="Сменить роль">${icon('out')}</button></div>
+  </nav></header>`;
+}
+
+function viewEntry() {
+  return `<div class="view-enter">
+    <section class="hero">
+      <div class="eyebrow">School 21 · Инкубатор Launch Lab 21</div>
+      <h1 class="display">От сырой идеи —<br><span class="grad">к готовому one-pager.</span></h1>
+      <p class="lead">Проходите программу по модулям. Каждый ответ сохраняется, а страница проекта собирается сама — её не нужно писать отдельно.</p>
+    </section>
+    <div class="flow" aria-label="Как это работает">
+      <div><b>1</b>Создайте проект</div><div><b>2</b>Пройдите модуль</div><div><b>3</b>Сохраните ответ</div><div><b>4</b>Увидьте one-pager</div>
+    </div>
+    <div class="entry-grid">
+      <section class="card pad entry">
+        <div class="entry-ic green">${icon('flag')}</div>
+        <h2>Я участник</h2>
+        <p class="muted">Откройте проект своей команды или создайте новый. Вы увидите только свой проект.</p>
+        <div class="plist">
+          ${S.projects.map(p => `<button class="pitem" data-action="enter-project" data-id="${p.id}">${projAva(p)}<span class="meta"><b>${esc(p.name)}</b><span>${doneCount(p)} из ${S.modules.length} модулей · ${p.members.length} ${plural(p.members.length, ['участник','участника','участников'])}</span></span>${icon('chevR')}</button>`).join('') || '<p class="muted small">Проектов пока нет</p>'}
+        </div>
+        <button class="btn primary" data-action="create-project">${icon('plus')}Создать проект</button>
+      </section>
+      <section class="card pad entry">
+        <div class="entry-ic">${icon('users')}</div>
+        <h2>Я куратор</h2>
+        <p class="muted">Все команды и их прогресс, ответы, комментарии, проверка модулей и управление программой.</p>
+        <div class="plist">
+          <div class="kv"><span>Команд в программе</span><b>${S.projects.length}</b></div>
+          <div class="kv"><span>Модулей</span><b>${S.modules.length}</b></div>
+          <div class="kv"><span>Ждут проверки</span><b>${S.projects.reduce((a, p) => a + pendingReviews(p), 0)}</b></div>
+        </div>
+        <button class="btn ghost" data-action="enter-curator">Войти как куратор ${icon('chevR')}</button>
+      </section>
+    </div>
+  </div>`;
+}
+
+function ringHTML(done, total) {
+  const r = 52, c = 2 * Math.PI * r, pct = total ? done / total : 0;
+  return `<div class="ring" role="img" aria-label="Пройдено ${done} из ${total} модулей"><svg viewBox="0 0 132 132"><circle class="track" cx="66" cy="66" r="${r}"/><circle class="val" cx="66" cy="66" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}" ${pct === 0 ? 'style="stroke:transparent"' : ''}/></svg><div class="num"><b>${Math.round(pct * 100)}%</b><span>${done} из ${total}</span></div></div>`;
+}
+
+function viewProject(p) {
+  const total = S.modules.length, done = doneCount(p), cur = firstIncomplete(p);
+  const curM = S.modules[cur];
+  const left = total - done;
+  const cmtCount = (m) => (p.comments[m.id] || []).length;
+  return `<div class="view-enter">
+    ${isCurator() ? `<a class="back" href="#/curator">${icon('chevL')}Все команды</a>` : ''}
+    <div class="dash">
+      <div>
+        <section class="card pad">
+          <div class="row" style="align-items:flex-start;gap:16px">
+            ${projAva(p, 'width:60px;height:60px;border-radius:17px;font-size:22px')}
+            <div style="flex:1;min-width:0">
+              <div class="eyebrow">${isCurator() ? 'Проект команды' : 'Мой проект'}</div>
+              <h1 class="title">${esc(p.name)}</h1>
+              <p class="lead" style="margin-top:6px">${p.description ? esc(p.description) : '<span style="color:var(--text-3)">Добавьте краткое описание проекта</span>'}</p>
+              ${p.tags.length ? `<div class="row wrap" style="gap:6px;margin-top:12px">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+            </div>
+            <button class="icon-btn" data-action="edit-project" data-id="${p.id}" aria-label="Редактировать профиль">${icon('edit')}</button>
+          </div>
+          <div class="row wrap" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--sep);gap:14px">
+            <div class="ava-stack">${p.members.slice(0, 5).map(m => ava(m.name)).join('')}</div>
+            <span class="muted small" style="flex:1;min-width:160px">${p.members.map(m => esc(m.name.split(' ')[0])).join(', ') || 'Состав команды не указан'}</span>
+            <a class="btn sm ghost" href="#/p/${p.id}/onepager">${icon('doc')}One-pager</a>
+          </div>
+        </section>
+
+        <div class="section-head"><h2 class="h2">Программа</h2><span class="muted small">${done} из ${total} ${plural(total, ['модуль','модуля','модулей'])} пройдено</span></div>
+        <div class="modules">
+          ${S.modules.map((m, i) => {
+            const st = moduleStatus(p, i);
+            const clickable = st !== 'locked' || isCurator();
+            const tagName = clickable ? 'a' : 'div';
+            const sub = st === 'done' ? `Пройден ${rel(p.submitted[m.id])}${changedSinceSubmit(p, m) ? ' · есть неотправленные правки' : ''}` : st === 'current' ? (hasContent(p, m) ? 'Текущий · черновик сохранён' : 'Текущий модуль — начните отсюда') : `Откроется после «${esc(S.modules[i - 1]?.title || '')}»`;
+            return `<${tagName} class="mrow ${st}" ${clickable ? `href="#/p/${p.id}/m/${m.id}"` : 'aria-disabled="true"'}>
+              <span class="mnum">${st === 'done' ? icon('check') : st === 'locked' ? icon('lock') : i + 1}</span>
+              <span class="mt"><b>${esc(m.title)}</b><span>${sub}</span></span>
+              ${cmtCount(m) ? `<span class="chip">${icon('bubble')}${cmtCount(m)}</span>` : ''}
+              ${st === 'done' ? reviewChip(p.review[m.id] || 'pending') : st === 'current' ? '<span class="chip accent">Текущий</span>' : ''}
+              ${clickable ? `<span class="chev">${icon('chevR')}</span>` : ''}
+            </${tagName}>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <aside class="stack">
+        <section class="card pad" style="text-align:center">
+          <div style="display:flex;justify-content:center">${ringHTML(done, total)}</div>
+          <h2 class="h3" style="margin-top:14px">${left === 0 ? 'Программа пройдена 🎉' : `Осталось ${left} ${plural(left, ['модуль','модуля','модулей'])}`}</h2>
+          <p class="muted small" style="margin-top:4px">${left === 0 ? 'One-pager собран из всех модулей' : `Следующий: «${esc(curM.title)}»`}</p>
+          ${isCurator() ? '' : left === 0
+            ? `<a class="btn primary" style="width:100%;margin-top:16px" href="#/p/${p.id}/onepager">${icon('doc')}Открыть one-pager</a>`
+            : `<a class="btn primary" style="width:100%;margin-top:16px" href="#/p/${p.id}/m/${curM.id}">${done === 0 && !hasContent(p, curM) ? 'Начать программу' : 'Продолжить'}${icon('chevR')}</a>`}
+        </section>
+        <section class="card pad">
+          <h2 class="h3" style="margin-bottom:14px">Бейджи</h2>
+          <div class="badges">
+            ${S.modules.map(m => `<div class="badge ${isDone(p, m) ? 'on' : ''}" title="${isDone(p, m) ? 'Получен' : 'Пройдите модуль'} «${esc(m.title)}»"><span class="medal">${esc(m.emoji || '⭐')}</span>${esc(m.badge || m.title)}</div>`).join('')}
+            <div class="badge ${left === 0 ? 'on' : ''}" title="Все модули пройдены"><span class="medal">🏆</span>Launch Ready</div>
+          </div>
+        </section>
+        <section class="card pad">
+          <label class="check" style="justify-content:space-between">
+            <span><b style="display:block;font-size:15px">Галерея Demo Day</b><span class="muted small">${p.published ? 'One-pager виден всем участникам' : 'Сейчас видят только команда и куратор'}</span></span>
+            <input type="checkbox" class="switch" data-action="toggle-publish" data-id="${p.id}" ${p.published ? 'checked' : ''}>
+          </label>
+          <div class="kv" style="margin-top:12px"><span>Создан</span><b>${fmtDate(p.createdAt)}</b></div>
+          <div class="kv"><span>Последнее изменение</span><b>${rel(p.updatedAt)}</b></div>
+          <button class="btn sm danger" style="margin-top:12px" data-action="delete-project" data-id="${p.id}">${icon('trash')}Удалить проект</button>
+        </section>
+      </aside>
+    </div>
+  </div>`;
+}
+
+function viewModule(p, mid) {
+  const i = S.modules.findIndex(m => m.id === mid);
+  if (i < 0) return viewMissing('Модуль не найден');
+  const m = S.modules[i], st = moduleStatus(p, i), cur = isCurator();
+  if (st === 'locked' && !cur) {
+    const need = S.modules[firstIncomplete(p)];
+    return `<div class="denied card pad view-enter">${icon('lock')}<h1 class="h2" style="margin:12px 0 6px">Модуль пока закрыт</h1><p class="muted">Модули идут по порядку. Сначала завершите «${esc(need.title)}».</p><a class="btn primary" style="margin-top:18px" href="#/p/${p.id}/m/${need.id}">Перейти к текущему</a></div>`;
+  }
+  const ans = p.answers[m.id] || {};
+  const comments = p.comments[m.id] || [];
+  const history = (p.history[m.id] || []).slice().reverse();
+  const done = isDone(p, m), changed = changedSinceSubmit(p, m);
+  const review = p.review[m.id] || 'pending';
+  const next = S.modules[i + 1];
+
+  const fieldsHTML = m.fields.map(f => {
+    const v = ans[f.id] || '';
+    if (cur) return `<div class="field"><div class="label">${esc(f.label)}</div><div class="ro">${v ? esc(v) : '<span class="none">Нет ответа</span>'}</div></div>`;
+    const ctrl = f.type === 'text'
+      ? `<input class="input" id="f_${esc(f.id)}" data-field="${esc(f.id)}" placeholder="${esc(f.placeholder)}" value="${esc(v)}" maxlength="400" ${f.required ? 'aria-required="true"' : ''}>`
+      : `<textarea class="textarea" id="f_${esc(f.id)}" data-field="${esc(f.id)}" placeholder="${esc(f.placeholder)}" rows="4" maxlength="3000" ${f.required ? 'aria-required="true"' : ''}>${esc(v)}</textarea>`;
+    return `<div class="field" data-fbox="${esc(f.id)}"><label class="label" for="f_${esc(f.id)}">${esc(f.label)}${f.required ? '<span class="req" aria-hidden="true">*</span>' : '<span class="opt">необязательно</span>'}</label>${ctrl}<div class="hint-row"><span class="err">Заполните это поле, чтобы завершить модуль</span><span class="spacer"></span><span data-count>${v.length}</span></div></div>`;
+  }).join('');
+
+  return `<div class="narrow view-enter">
+    <a class="back" href="#/p/${p.id}">${icon('chevL')}${esc(p.name)}</a>
+    <div class="eyebrow">Модуль ${i + 1} из ${S.modules.length}</div>
+    <div class="row wrap" style="gap:10px"><h1 class="title" style="margin-right:auto">${esc(m.title)}</h1>
+      ${done ? reviewChip(review) : '<span class="chip accent">Текущий</span>'}${changed ? '<span class="chip orange">Изменено после отправки</span>' : ''}</div>
+    <div class="stepper" aria-hidden="true">${S.modules.map((mm, j) => { const s = moduleStatus(p, j); return (s !== 'locked' || cur) ? `<a href="#/p/${p.id}/m/${mm.id}" class="${s === 'done' ? 'done' : j === i ? 'cur' : ''}" title="${esc(mm.title)}"></a>` : `<span title="${esc(mm.title)}"></span>`; }).join('')}</div>
+    ${m.task ? `<div class="task">${icon('bulb')}<div><b>Задание.</b> ${esc(m.task)}</div></div>` : ''}
+
+    <form class="card pad" data-module data-pid="${p.id}" data-mid="${m.id}" onsubmit="return false" novalidate>${fieldsHTML}</form>
+
+    ${cur ? `
+      <div class="actionbar">
+        <span class="savestate">${done ? `Отправлено ${rel(p.submitted[m.id])}` : hasContent(p, m) ? 'Черновик, не отправлен' : 'Команда ещё не отвечала'}</span>
+        ${done ? `<button class="btn sm ${review === 'changes' ? 'primary' : 'ghost'}" data-action="review" data-v="changes">На доработку</button><button class="btn sm ${review === 'approved' ? 'primary' : 'ghost'}" data-action="review" data-v="approved">${icon('check')}Принять</button>` : ''}
+      </div>` : `
+      <div class="actionbar">
+        <span class="savestate" id="savestate">${icon('check')}<span>${hasContent(p, m) ? 'Все изменения сохранены' : 'Ответы сохраняются автоматически'}</span></span>
+        <a class="btn ghost" href="#/p/${p.id}/onepager">${icon('eye')}One-pager</a>
+        <button class="btn primary" data-action="submit-module">${done ? (changed ? 'Отправить новую версию' : 'Отправить заново') : 'Завершить модуль'}</button>
+      </div>`}
+
+    <div class="section-head"><h2 class="h2">Комментарии</h2><span class="muted small">${comments.length}</span></div>
+    <section class="card pad">
+      ${comments.length ? comments.map(c => `<div class="comment">${ava(c.author)}<div class="body"><div class="who">${esc(c.author)}${c.role === 'curator' ? ' <span class="chip accent" style="padding:1px 7px">куратор</span>' : ''}<time>${rel(c.at)}</time></div><p>${esc(c.text)}</p></div></div>`).join('') : `<p class="muted small">${cur ? 'Оставьте первый комментарий к ответам команды.' : 'Здесь появятся комментарии куратора к вашим ответам.'}</p>`}
+      <div class="row" style="margin-top:16px;align-items:flex-end">
+        <textarea class="textarea" id="cmt" rows="2" style="min-height:48px" placeholder="${cur ? 'Комментарий для команды…' : 'Ответить куратору…'}" aria-label="Комментарий"></textarea>
+        <button class="icon-btn" style="width:44px;height:44px;background:var(--accent);color:#fff" data-action="add-comment" aria-label="Отправить комментарий">${icon('send')}</button>
+      </div>
+    </section>
+
+    <div class="section-head"><h2 class="h2">История версий</h2><span class="muted small">${history.length}</span></div>
+    <section class="card pad">
+      ${history.length ? history.map((v, k) => `<details class="ver"><summary>${icon('clock')}<span style="margin-right:auto">Версия ${history.length - k}${k === 0 ? ' · последняя' : ''}</span><span class="muted small" style="font-weight:400">${fmtDate(v.at)}</span>${!cur ? `<button class="btn sm ghost" data-action="restore" data-idx="${history.length - 1 - k}">${icon('restore')}Восстановить</button>` : ''}</summary>
+        <div class="vbody">${m.fields.map(f => `<div><small>${esc(f.label)}</small>${v.values[f.id] ? esc(v.values[f.id]) : '<span style="color:var(--text-3)">—</span>'}</div>`).join('')}</div></details>`).join('') : '<p class="muted small">Версия появится после завершения модуля. Каждая повторная отправка сохраняется отдельно.</p>'}
+    </section>
+    ${next && done && !cur ? `<div style="text-align:center;margin-top:28px"><a class="btn lg ghost" href="#/p/${p.id}/m/${next.id}">Следующий модуль: ${esc(next.title)}${icon('chevR')}</a></div>` : ''}
+  </div>`;
+}
+
+function viewOnePager(p) {
+  const d = onePagerData(p);
+  const full = canSee(p);
+  return `<div class="view-enter">
+    <div class="op-toolbar" style="max-width:860px;margin-left:auto;margin-right:auto">
+      <a class="back" style="margin:0 auto 0 0" href="${full ? `#/p/${p.id}` : '#/gallery'}">${icon('chevL')}${full ? esc(p.name) : 'Галерея'}</a>
+      ${full ? `<button class="btn sm ghost" data-action="copy-share" data-id="${p.id}">${icon('link')}Публичная ссылка</button>` : ''}
+      <button class="btn sm primary" data-action="print">${icon('print')}PDF / Печать</button>
+    </div>
+    ${onePagerHTML(d)}
+  </div>`;
+}
+
+function viewShare(code) {
+  let d;
+  try { d = decodeShare(code); if (!d || !Array.isArray(d.sections)) throw 0; }
+  catch (e) { return `<div class="denied card pad view-enter">${icon('link')}<h1 class="h2" style="margin:12px 0 6px">Ссылка повреждена</h1><p class="muted">Не удалось прочитать one-pager. Попросите команду скопировать ссылку заново.</p><a class="btn primary" style="margin-top:18px" href="#/">На главную</a></div>`; }
+  d.members ||= []; d.tags ||= [];
+  return `<div class="view-enter">
+    <div class="banner">${icon('eye')}<span style="margin-right:auto">Публичная копия one-pager от ${fmtDate(d.at || Date.now())} · только чтение</span><button class="btn sm primary" data-action="print">${icon('print')}PDF</button></div>
+    ${onePagerHTML(d)}
+  </div>`;
+}
+
+const ui = { teamQuery:'', teamFilter:'all', peopleQuery:'', peopleSkill:'', peopleOpen:false };
+
+function teamsListHTML() {
+  const q = ui.teamQuery.trim().toLowerCase();
+  const total = S.modules.length;
+  const list = S.projects.filter(p => {
+    const txt = [p.name, p.description, ...p.tags, ...p.members.map(m => m.name)].join(' ').toLowerCase();
+    if (q && !txt.includes(q)) return false;
+    const d = doneCount(p);
+    if (ui.teamFilter === 'progress') return d < total;
+    if (ui.teamFilter === 'done') return d === total;
+    if (ui.teamFilter === 'review') return pendingReviews(p) > 0;
+    return true;
+  }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  if (!list.length) return `<div class="empty">${icon('search')}<p>Ничего не найдено</p></div>`;
+  return list.map(p => {
+    const d = doneCount(p), ci = firstIncomplete(p), pr = pendingReviews(p);
+    return `<div class="team">
+      <a class="row nm tap" href="#/p/${p.id}" style="gap:12px;min-width:0">${projAva(p)}<span style="min-width:0"><b>${esc(p.name)}</b><span>${p.members.length} ${plural(p.members.length, ['участник','участника','участников'])} · изменено ${rel(p.updatedAt)}</span></span></a>
+      <div>
+        <div class="row small" style="justify-content:space-between;margin-bottom:6px"><span class="muted">${ci < 0 ? 'Все модули пройдены' : 'Текущий: ' + esc(S.modules[ci].title)}</span><b>${d}/${total}</b></div>
+        <div class="bar"><i style="width:${total ? d / total * 100 : 0}%"></i></div>
+      </div>
+      <div class="row" style="gap:6px;justify-content:flex-end">
+        ${pr ? `<span class="chip orange">${pr} на проверке</span>` : ''}
+        ${p.published ? '<span class="chip green">В галерее</span>' : ''}
+        <a class="icon-btn" href="#/p/${p.id}/onepager" aria-label="One-pager ${esc(p.name)}" title="One-pager">${icon('doc')}</a>
+        <button class="icon-btn" data-action="edit-project" data-id="${p.id}" aria-label="Редактировать ${esc(p.name)}" title="Редактировать">${icon('edit')}</button>
+        <button class="icon-btn danger" data-action="delete-project" data-id="${p.id}" aria-label="Удалить ${esc(p.name)}" title="Удалить">${icon('trash')}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewCurator() {
+  const total = S.modules.length, n = S.projects.length;
+  const avg = n ? Math.round(S.projects.reduce((a, p) => a + doneCount(p) / (total || 1), 0) / n * 100) : 0;
+  const review = S.projects.reduce((a, p) => a + pendingReviews(p), 0);
+  const ready = S.projects.filter(p => doneCount(p) === total).length;
+  const seg = [['all','Все'],['progress','В процессе'],['review','На проверке'],['done','Завершили']];
+  return `<div class="view-enter">
+    <div class="row wrap" style="margin-bottom:22px"><div style="margin-right:auto"><div class="eyebrow">Панель куратора</div><h1 class="title">Команды инкубатора</h1></div>
+      <button class="btn primary" data-action="create-project">${icon('plus')}Новая команда</button></div>
+    <div class="stats">
+      <div class="card stat"><b>${n}</b><span>${plural(n, ['команда','команды','команд'])}</span></div>
+      <div class="card stat"><b>${avg}%</b><span>средний прогресс</span></div>
+      <div class="card stat"><b style="color:${review ? 'var(--orange)' : 'inherit'}">${review}</b><span>ждут проверки</span></div>
+      <div class="card stat"><b style="color:var(--green)">${ready}</b><span>готовы к Demo Day</span></div>
+    </div>
+    <div class="section-head"><h2 class="h2">Прогресс команд</h2></div>
+    <div class="toolbar">
+      <label class="search">${icon('search')}<input class="input" type="search" data-filter="teams" placeholder="Поиск по команде, участнику, тегу" value="${esc(ui.teamQuery)}" aria-label="Поиск команд"></label>
+      <div class="seg" role="group" aria-label="Фильтр">${seg.map(([v, l]) => `<button data-action="team-filter" data-v="${v}" class="${ui.teamFilter === v ? 'on' : ''}" aria-pressed="${ui.teamFilter === v}">${l}</button>`).join('')}</div>
+    </div>
+    <section class="card" id="teams-list">${teamsListHTML()}</section>
+  </div>`;
+}
+
+function viewModulesAdmin() {
+  return `<div class="narrow view-enter">
+    <div class="row wrap" style="margin-bottom:8px"><div style="margin-right:auto"><div class="eyebrow">Управление программой</div><h1 class="title">Модули</h1></div>
+      <button class="btn primary" data-action="edit-module">${icon('plus')}Добавить модуль</button></div>
+    <p class="muted" style="margin-bottom:20px">Экраны модулей и one-pager строятся из этого списка автоматически. Порядок определяет последовательность прохождения. Минимум — 3 модуля.</p>
+    <section class="card">
+      ${S.modules.map((m, i) => `<div class="mod-admin">
+        <span class="mnum" style="font-size:20px">${esc(m.emoji || i + 1)}</span>
+        <div style="flex:1;min-width:0"><b>${i + 1}. ${esc(m.title)}</b><div class="muted small">${m.fields.length} ${plural(m.fields.length, ['поле','поля','полей'])} · бейдж «${esc(m.badge || '—')}» · прошли ${S.projects.filter(p => isDone(p, m)).length} из ${S.projects.length}</div></div>
+        <button class="icon-btn" data-action="move-module" data-id="${m.id}" data-dir="-1" ${i === 0 ? 'disabled style="opacity:.3"' : ''} aria-label="Выше">${icon('up')}</button>
+        <button class="icon-btn" data-action="move-module" data-id="${m.id}" data-dir="1" ${i === S.modules.length - 1 ? 'disabled style="opacity:.3"' : ''} aria-label="Ниже">${icon('down')}</button>
+        <button class="icon-btn" data-action="edit-module" data-id="${m.id}" aria-label="Редактировать">${icon('edit')}</button>
+        <button class="icon-btn danger" data-action="delete-module" data-id="${m.id}" aria-label="Удалить">${icon('trash')}</button>
+      </div>`).join('')}
+    </section>
+  </div>`;
+}
+
+function viewGallery() {
+  const list = S.projects.filter(p => isCurator() || p.published || isOwn(p));
+  return `<div class="view-enter">
+    <div class="eyebrow">Demo Day</div>
+    <h1 class="title">Галерея one-pager</h1>
+    <p class="lead" style="margin:8px 0 26px;max-width:640px">Проекты, которые команды опубликовали для Demo Day. Публикация включается на странице проекта.</p>
+    ${list.length ? `<div class="gallery">${list.map(p => {
+      const h = hue(p.name), liked = session.liked.includes(p.id), d = doneCount(p), t = S.modules.length;
+      return `<article class="card gcard">
+        <div class="gcover" style="background:linear-gradient(135deg,hsl(${h} 70% 62% / .9),hsl(${(h + 60) % 360} 70% 55% / .9))">${projAva(p)}</div>
+        <div class="gbody">
+          <div class="row" style="gap:8px"><h2 class="h3" style="margin-right:auto">${esc(p.name)}</h2>${!p.published ? '<span class="chip">Скрыт</span>' : ''}</div>
+          <p>${esc(p.description || 'Без описания')}</p>
+          ${p.tags.length ? `<div class="row wrap" style="gap:6px">${p.tags.map(x => `<span class="tag" style="font-size:12px;padding:2px 9px">${esc(x)}</span>`).join('')}</div>` : ''}
+          <div><div class="row small" style="justify-content:space-between;margin-bottom:5px"><span class="muted">Прогресс</span><b>${d}/${t}</b></div><div class="bar"><i style="width:${t ? d / t * 100 : 0}%"></i></div></div>
+          <div class="row" style="margin-top:auto;padding-top:6px">
+            <button class="like ${liked ? 'on' : ''}" data-action="like" data-id="${p.id}" aria-pressed="${liked}" aria-label="Нравится">${icon('heart')}<span>${p.likes || 0}</span></button>
+            <span class="spacer"></span>
+            <a class="btn sm primary" href="#/p/${p.id}/onepager">Открыть${icon('chevR')}</a>
+          </div>
+        </div>
+      </article>`; }).join('')}</div>`
+    : `<div class="card empty">${icon('star')}<p>Пока ни одна команда не опубликовала one-pager</p></div>`}
+  </div>`;
+}
+
+function allPeople() {
+  return S.projects.flatMap(p => p.members.map(m => ({ m, p })));
+}
+function peopleListHTML() {
+  const q = ui.peopleQuery.trim().toLowerCase();
+  const list = allPeople().filter(({ m, p }) => {
+    if (ui.peopleOpen && !m.openToProjects) return false;
+    if (ui.peopleSkill && !(m.skills || []).includes(ui.peopleSkill)) return false;
+    if (q && ![m.name, m.role, p.name, ...(m.skills || [])].join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if (!list.length) return `<div class="card empty" style="grid-column:1/-1">${icon('users')}<p>Никого не нашли. Попробуйте другой навык.</p></div>`;
+  return list.map(({ m, p }) => `<article class="card person">
+    <div class="top">${ava(m.name, 'lg')}<div style="flex:1;min-width:0"><b>${esc(m.name)}</b><span>${esc(m.role || 'Участник')} · ${canSee(p, 'onepager') ? `<a href="#/p/${p.id}/onepager">${esc(p.name)}</a>` : esc(p.name)}</span></div>
+      ${m.openToProjects ? '<span class="chip green">Открыт к проектам</span>' : ''}</div>
+    <div class="skills">${(m.skills || []).map(s => { const key = `${m.id}:${s}`, on = session.endorsed.includes(key), c = (m.endorsements || {})[s] || 0;
+      return `<span class="skill">${esc(s)}<button data-action="endorse" data-pid="${p.id}" data-uid="${m.id}" data-skill="${esc(s)}" class="${on ? 'on' : ''}" aria-pressed="${on}" title="Подтвердить навык">+${c}</button></span>`; }).join('') || '<span class="muted small">Навыки не указаны</span>'}</div>
+    <div class="row">${m.contact ? `<span class="muted small" style="margin-right:auto">${esc(m.contact)}</span><button class="btn sm ghost" data-action="copy-contact" data-v="${esc(m.contact)}">${icon('bubble')}Связаться</button>` : '<span class="muted small">Контакт не указан</span>'}</div>
+  </article>`).join('');
+}
+function viewPeople() {
+  const skills = [...new Set(allPeople().flatMap(x => x.m.skills || []))].sort((a, b) => a.localeCompare(b, 'ru'));
+  return `<div class="view-enter">
+    <div class="eyebrow">Сообщество</div>
+    <h1 class="title">Участники и навыки</h1>
+    <p class="lead" style="margin:8px 0 22px;max-width:640px">Найдите людей с нужными навыками, подтвердите чужие скиллы и свяжитесь с теми, кто открыт к новым проектам.</p>
+    <div class="toolbar">
+      <label class="search">${icon('search')}<input class="input" type="search" data-filter="people" placeholder="Имя, роль, навык или проект" value="${esc(ui.peopleQuery)}" aria-label="Поиск участников"></label>
+      <label class="check small"><input type="checkbox" class="switch" data-action="people-open" ${ui.peopleOpen ? 'checked' : ''}>Открыты к проектам</label>
+    </div>
+    <div class="row wrap" style="gap:6px;margin-bottom:18px" role="group" aria-label="Навыки">
+      <button class="tag ${!ui.peopleSkill ? 'on' : ''}" data-action="people-skill" data-v="">Все навыки</button>
+      ${skills.map(s => `<button class="tag ${ui.peopleSkill === s ? 'on' : ''}" data-action="people-skill" data-v="${esc(s)}">${esc(s)}</button>`).join('')}
+    </div>
+    <div class="people" id="people-list">${peopleListHTML()}</div>
+  </div>`;
+}
+
+function viewDenied() {
+  return `<div class="denied card pad view-enter">${icon('lock')}<h1 class="h2" style="margin:12px 0 6px">Нет доступа</h1><p class="muted">Участник видит только свой проект. Ответы других команд доступны куратору, а их one-pager — если команда опубликовала его в галерее.</p><a class="btn primary" style="margin-top:18px" href="#/">К своему проекту</a></div>`;
+}
+function viewMissing(msg = 'Проект не найден') {
+  return `<div class="denied card pad view-enter">${icon('search')}<h1 class="h2" style="margin:12px 0 6px">${esc(msg)}</h1><p class="muted">Возможно, он был удалён.</p><a class="btn primary" style="margin-top:18px" href="#/">На главную</a></div>`;
+}
+
+/* ---------- Router ---------- */
+function route() {
+  const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  if (session.role === 'participant' && !getP(session.projectId)) { session.role = null; session.projectId = null; saveSession(); }
+  let html;
+  if (parts[0] === 'share') html = viewShare(parts.slice(1).join('/'));
+  else if (!session.role) { if (parts.length) { location.replace('#/'); return; } html = viewEntry(); }
+  else if (parts[0] === 'p') {
+    const p = getP(parts[1]);
+    if (!p) html = viewMissing();
+    else if (parts[2] === 'onepager') html = canSee(p, 'onepager') ? viewOnePager(p) : viewDenied();
+    else if (!canSee(p)) html = viewDenied();
+    else if (parts[2] === 'm') html = viewModule(p, parts[3]);
+    else html = viewProject(p);
+  }
+  else if (parts[0] === 'curator') html = isCurator() ? viewCurator() : viewDenied();
+  else if (parts[0] === 'modules') html = isCurator() ? viewModulesAdmin() : viewDenied();
+  else if (parts[0] === 'gallery') html = viewGallery();
+  else if (parts[0] === 'people') html = viewPeople();
+  else { location.replace(isCurator() ? '#/curator' : `#/p/${session.projectId}`); return; }
+
+  $('#nav').innerHTML = parts[0] === 'share' && !session.role ? navHTML() : navHTML();
+  $('#app').innerHTML = html;
+  $('#footer').innerHTML = `<span>Данные хранятся локально в этом браузере и работают без интернета.</span><button data-action="reset-demo">Сбросить демо-данные</button>`;
+  const title = $('#app h1'); document.title = (title ? title.textContent.trim() + ' — ' : '') + 'Launch Lab 21';
+}
+let lastPath = '';
+addEventListener('hashchange', () => {
+  const path = location.hash;
+  if (Sheet.root) removeSheetNow();
+  route();
+  if (path !== lastPath) scrollTo({ top: 0, behavior: 'instant' });
+  lastPath = path;
+});
+const rerender = () => { const y = scrollY; route(); $('#app .view-enter')?.classList.remove('view-enter'); scrollTo(0, y); };
+
+/* ---------- Sheets: forms ---------- */
+function membersEditorHTML(members) {
+  return members.map((m, i) => `<div class="fedit" data-member="${i}" data-uid="${esc(m.id)}">
+    <div class="row"><input class="input" data-k="name" placeholder="Имя и фамилия" value="${esc(m.name)}" aria-label="Имя"><input class="input" data-k="role" placeholder="Роль" value="${esc(m.role)}" style="max-width:150px" aria-label="Роль"><button type="button" class="icon-btn danger" data-action="rm-member" data-i="${i}" aria-label="Удалить участника">${icon('trash')}</button></div>
+    <div class="row"><input class="input" data-k="skills" placeholder="Навыки через запятую" value="${esc((m.skills || []).join(', '))}" aria-label="Навыки"><input class="input" data-k="contact" placeholder="@telegram" value="${esc(m.contact)}" style="max-width:150px" aria-label="Контакт"></div>
+    <label class="check small"><input type="checkbox" class="switch" data-k="open" ${m.openToProjects ? 'checked' : ''}>Открыт к новым проектам</label>
+  </div>`).join('');
+}
+function readMembers(panel, prev) {
+  return [...panel.querySelectorAll('[data-member]')].map(box => {
+    const old = prev.find(x => x.id === box.dataset.uid) || {};
+    const g = (k) => box.querySelector(`[data-k="${k}"]`);
+    return { id: old.id || uid('u'), endorsements: old.endorsements || {}, name: g('name').value.trim(), role: g('role').value.trim(), skills: splitList(g('skills').value), contact: g('contact').value.trim(), openToProjects: g('open').checked };
+  });
+}
+function projectSheet(p) {
+  const isNew = !p;
+  let members = p ? clone(p.members) : [{ id: uid('u'), name: '', role: '', skills: [], contact: '', openToProjects: false, endorsements: {} }];
+  openSheet({
+    title: isNew ? 'Новый проект' : 'Профиль проекта', wide: true,
+    body: `<form id="pform" onsubmit="return false" novalidate>
+      <div class="field" data-fbox="name"><label class="label" for="pf_name">Название<span class="req">*</span></label><input class="input" id="pf_name" placeholder="Например: Qatnov" value="${esc(p?.name)}" maxlength="60"><div class="hint-row"><span class="err">Введите название проекта</span></div></div>
+      <div class="field"><label class="label" for="pf_desc">Краткое описание</label><textarea class="textarea" id="pf_desc" rows="2" style="min-height:70px" maxlength="240" placeholder="Одно предложение: что за продукт и для кого">${esc(p?.description)}</textarea></div>
+      <div class="field"><label class="label" for="pf_tags">Теги <span class="opt">через запятую</span></label><input class="input" id="pf_tags" placeholder="EdTech, AI" value="${esc((p?.tags || []).join(', '))}"></div>
+      <div class="label" style="margin-top:6px">Состав команды</div>
+      <div id="members">${membersEditorHTML(members)}</div>
+      <button type="button" class="btn sm ghost" data-action="add-member">${icon('plus')}Добавить участника</button>
+    </form>`,
+    footer: `<button class="btn ghost" data-action="close-sheet">Отмена</button><button class="btn primary" data-action="save-project">${isNew ? 'Создать проект' : 'Сохранить'}</button>`,
+    onMount(panel) {
+      panel._rerenderMembers = (mutate) => { members = readMembers(panel, members); mutate(members); $('#members', panel).innerHTML = membersEditorHTML(members); };
+      panel._save = () => {
+        const name = $('#pf_name', panel).value.trim();
+        const box = panel.querySelector('[data-fbox="name"]');
+        box.classList.toggle('invalid', !name);
+        if (!name) { $('#pf_name', panel).focus(); return; }
+        const list = readMembers(panel, members).filter(m => m.name);
+        const data = { name, description: $('#pf_desc', panel).value.trim(), tags: splitList($('#pf_tags', panel).value), members: list, updatedAt: Date.now() };
+        if (isNew) {
+          const np = normalize({ id: uid('p'), published: false, likes: 0, createdAt: Date.now(), ...data });
+          S.projects.push(np); save();
+          if (!isCurator()) { session.role = 'participant'; session.projectId = np.id; saveSession(); }
+          closeSheet(); location.hash = `#/p/${np.id}`;
+          toast(`Проект «${name}» создан`);
+        } else {
+          Object.assign(p, data); save(); closeSheet(); rerender(); toast('Профиль сохранён');
+        }
+      };
+    },
+  });
+}
+
+function moduleSheet(m) {
+  const isNew = !m;
+  let draft = m ? clone(m) : { id: uid('m'), title: '', badge: '', emoji: '⭐', task: '', fields: [{ id: uid('f'), label: '', placeholder: '', type: 'textarea', required: true }] };
+  const fieldsHTML = () => draft.fields.map((f, i) => `<div class="fedit" data-fi="${i}">
+    <div class="row"><input class="input" data-k="label" placeholder="Вопрос, например: Кто ваш клиент?" value="${esc(f.label)}" aria-label="Вопрос"><button type="button" class="icon-btn danger" data-action="rm-field" data-i="${i}" aria-label="Удалить поле">${icon('trash')}</button></div>
+    <input class="input" data-k="placeholder" placeholder="Подсказка внутри поля — что именно писать" value="${esc(f.placeholder)}" aria-label="Подсказка">
+    <div class="row"><select class="select" data-k="type" style="max-width:200px" aria-label="Тип поля"><option value="textarea" ${f.type !== 'text' ? 'selected' : ''}>Многострочный текст</option><option value="text" ${f.type === 'text' ? 'selected' : ''}>Короткая строка</option></select>
+    <label class="check small"><input type="checkbox" class="switch" data-k="required" ${f.required ? 'checked' : ''}>Обязательное</label></div>
+  </div>`).join('');
+  const read = (panel) => {
+    draft.title = $('#mf_title', panel).value.trim(); draft.badge = $('#mf_badge', panel).value.trim();
+    draft.emoji = $('#mf_emoji', panel).value.trim() || '⭐'; draft.task = $('#mf_task', panel).value.trim();
+    draft.fields = [...panel.querySelectorAll('[data-fi]')].map((box, i) => ({ ...draft.fields[i], label: box.querySelector('[data-k=label]').value.trim(), placeholder: box.querySelector('[data-k=placeholder]').value.trim(), type: box.querySelector('[data-k=type]').value, required: box.querySelector('[data-k=required]').checked }));
+  };
+  openSheet({
+    title: isNew ? 'Новый модуль' : 'Редактировать модуль', wide: true,
+    body: `<form onsubmit="return false" novalidate>
+      <div class="row" style="align-items:flex-start">
+        <div class="field" style="width:80px"><label class="label" for="mf_emoji">Иконка</label><input class="input" id="mf_emoji" value="${esc(draft.emoji)}" maxlength="4" style="text-align:center"></div>
+        <div class="field" style="flex:1" data-fbox="title"><label class="label" for="mf_title">Название<span class="req">*</span></label><input class="input" id="mf_title" value="${esc(draft.title)}" placeholder="Например: Юнит-экономика"><div class="hint-row"><span class="err">Введите название</span></div></div>
+      </div>
+      <div class="field"><label class="label" for="mf_task">Задание для команды</label><textarea class="textarea" id="mf_task" rows="2" style="min-height:70px" placeholder="Что команда должна сделать в этом модуле">${esc(draft.task)}</textarea></div>
+      <div class="field"><label class="label" for="mf_badge">Бейдж за прохождение</label><input class="input" id="mf_badge" value="${esc(draft.badge)}" placeholder="Например: Финансист"></div>
+      <div class="label">Поля шаблона ответа</div>
+      <div id="mfields">${fieldsHTML()}</div>
+      <button type="button" class="btn sm ghost" data-action="add-field">${icon('plus')}Добавить поле</button>
+      <p class="err" id="mf_err" style="margin-top:10px"></p>
+    </form>`,
+    footer: `<button class="btn ghost" data-action="close-sheet">Отмена</button><button class="btn primary" data-action="save-module">${isNew ? 'Добавить' : 'Сохранить'}</button>`,
+    onMount(panel) {
+      panel._fields = (mutate) => { read(panel); mutate(draft.fields); $('#mfields', panel).innerHTML = fieldsHTML(); };
+      panel._save = () => {
+        read(panel);
+        const err = $('#mf_err', panel);
+        panel.querySelector('[data-fbox=title]').classList.toggle('invalid', !draft.title);
+        draft.fields = draft.fields.filter(f => f.label);
+        if (!draft.title) { $('#mf_title', panel).focus(); return; }
+        if (!draft.fields.length) { err.textContent = 'Добавьте хотя бы одно поле с вопросом'; err.style.display = 'block'; $('#mfields', panel).innerHTML = fieldsHTML(); return; }
+        if (isNew) S.modules.push(draft); else S.modules[S.modules.findIndex(x => x.id === draft.id)] = draft;
+        save(); closeSheet(); rerender(); toast(isNew ? 'Модуль добавлен в программу' : 'Модуль обновлён');
+      };
+    },
+  });
+}
+
+function completionSheet(p, m) {
+  const i = S.modules.indexOf(m), next = S.modules.slice(i + 1).find(x => !isDone(p, x)) || S.modules.find(x => !isDone(p, x));
+  const all = doneCount(p) === S.modules.length;
+  openSheet({
+    title: all ? 'Программа пройдена' : 'Модуль пройден',
+    body: `<div class="celebrate"><div class="medal">${all ? '🏆' : esc(m.emoji || '⭐')}</div>
+      <h3 class="h2">${all ? 'Launch Ready!' : `Бейдж «${esc(m.badge || m.title)}»`}</h3>
+      <p class="muted" style="margin-top:6px">${all ? 'Все модули пройдены — one-pager собран целиком.' : `Ответы уже в one-pager. Пройдено ${doneCount(p)} из ${S.modules.length}.`}</p></div>`,
+    footer: `<a class="btn ghost" href="#/p/${p.id}/onepager">${icon('doc')}One-pager</a>${next ? `<a class="btn primary" href="#/p/${p.id}/m/${next.id}">Следующий модуль${icon('chevR')}</a>` : `<a class="btn primary" href="#/p/${p.id}">К проекту</a>`}`,
+  });
+}
+
+function confirmSheet({ title, text, confirm, danger = true, onConfirm }) {
+  openSheet({ title, body: `<p class="muted">${esc(text)}</p>`,
+    footer: `<button class="btn ghost" data-action="close-sheet">Отмена</button><button class="btn ${danger ? 'danger' : 'primary'}" data-action="confirm">${esc(confirm)}</button>`,
+    onMount(panel) { panel._confirm = () => { closeSheet(); onConfirm(); }; } });
+}
+
+/* ---------- Actions ---------- */
+const moduleCtx = () => { const f = $('[data-module]'); return f ? { p: getP(f.dataset.pid), m: getM(f.dataset.mid), form: f } : {}; };
+
+const actions = {
+  'enter-project'(el) { session.role = 'participant'; session.projectId = el.dataset.id; saveSession(); location.hash = `#/p/${el.dataset.id}`; },
+  'enter-curator'() { session.role = 'curator'; session.projectId = null; saveSession(); location.hash = '#/curator'; },
+  'logout'() { session.role = null; session.projectId = null; saveSession(); if (location.hash === '#/' || !location.hash) route(); else location.hash = '#/'; },
+  'create-project'() { projectSheet(null); },
+  'edit-project'(el) { projectSheet(getP(el.dataset.id)); },
+  'save-project'() { Sheet.panel?._save(); },
+  'add-member'() { Sheet.panel?._rerenderMembers(l => l.push({ id: uid('u'), name: '', role: '', skills: [], contact: '', openToProjects: false, endorsements: {} })); Sheet.panel.querySelector('[data-member]:last-child input')?.focus(); },
+  'rm-member'(el) { Sheet.panel?._rerenderMembers(l => l.splice(+el.dataset.i, 1)); },
+  'close-sheet'() { closeSheet(); },
+  'confirm'() { Sheet.panel?._confirm(); },
+
+  'toggle-publish'(el) {
+    const p = getP(el.dataset.id); p.published = el.checked; p.updatedAt = Date.now(); save();
+    toast(p.published ? 'One-pager опубликован в галерее Demo Day' : 'One-pager скрыт из галереи'); rerender();
+  },
+  'delete-project'(el) {
+    const idx = S.projects.findIndex(x => x.id === el.dataset.id); if (idx < 0) return;
+    const [p] = S.projects.splice(idx, 1); save();
+    const wasOwn = session.projectId === p.id && session.role === 'participant';
+    if (wasOwn) { session.role = null; session.projectId = null; saveSession(); }
+    if (!isCurator()) location.hash = '#/'; else if (location.hash.startsWith('#/p/')) location.hash = '#/curator'; else rerender();
+    toast(`Проект «${p.name}» удалён`, { label: 'Отменить', action() {
+      S.projects.splice(Math.min(idx, S.projects.length), 0, p); save();
+      if (wasOwn) { session.role = 'participant'; session.projectId = p.id; saveSession(); location.hash = `#/p/${p.id}`; } else rerender();
+    } });
+  },
+
+  'submit-module'() {
+    const { p, m, form } = moduleCtx(); if (!p) return;
+    let firstBad = null;
+    m.fields.forEach(f => {
+      const bad = f.required && !String(p.answers[m.id]?.[f.id] || '').trim();
+      const box = form.querySelector(`[data-fbox="${CSS.escape(f.id)}"]`);
+      box.classList.toggle('invalid', bad);
+      box.querySelector('[data-field]').setAttribute('aria-invalid', bad);
+      if (bad && !firstBad) firstBad = box;
+    });
+    if (firstBad) { firstBad.querySelector('[data-field]').focus(); firstBad.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' }); toast('Заполните обязательные поля'); return; }
+    const wasDone = isDone(p, m);
+    const values = {}; m.fields.forEach(f => values[f.id] = String(p.answers[m.id]?.[f.id] || ''));
+    (p.history[m.id] ||= []).push({ at: Date.now(), values });
+    p.submitted[m.id] = Date.now(); p.review[m.id] = 'pending'; p.updatedAt = Date.now();
+    save(); rerender();
+    if (wasDone) toast(`Версия ${p.history[m.id].length} отправлена куратору`);
+    else completionSheet(p, m);
+  },
+  'restore'(el, e) {
+    e.preventDefault();
+    const { p, m } = moduleCtx(); const v = p.history[m.id][+el.dataset.idx]; if (!v) return;
+    const prev = clone(p.answers[m.id] || {});
+    p.answers[m.id] = clone(v.values); p.updatedAt = Date.now(); save(); rerender();
+    toast('Ответы восстановлены из версии', { label: 'Отменить', action() { p.answers[m.id] = prev; save(); rerender(); } });
+  },
+  'add-comment'() {
+    const { p, m } = moduleCtx(); const ta = $('#cmt'); const text = ta.value.trim();
+    if (!text) { ta.focus(); return; }
+    (p.comments[m.id] ||= []).push({ id: uid('c'), author: isCurator() ? 'Куратор' : p.name, role: session.role, text, at: Date.now() });
+    p.updatedAt = Date.now(); save(); rerender(); toast('Комментарий отправлен');
+  },
+  'review'(el) {
+    const { p, m } = moduleCtx(); p.review[m.id] = el.dataset.v; save(); rerender();
+    toast(el.dataset.v === 'approved' ? 'Модуль принят' : 'Отправлено на доработку — оставьте комментарий');
+    if (el.dataset.v === 'changes') $('#cmt')?.focus();
+  },
+
+  'print'() { window.print(); },
+  async 'copy-share'(el) {
+    const p = getP(el.dataset.id);
+    const url = location.href.split('#')[0] + '#/share/' + encodeShare(onePagerData(p));
+    const ok = await copyText(url);
+    openSheet({ title: 'Публичная ссылка',
+      body: `<p class="muted" style="margin-bottom:12px">${ok ? 'Ссылка скопирована. ' : ''}Это снимок one-pager на текущий момент: данные зашиты в саму ссылку, поэтому она открывается без входа и без сервера. После новых ответов скопируйте ссылку заново.</p><input class="input" readonly value="${esc(url)}" onfocus="this.select()" aria-label="Ссылка">`,
+      footer: `<a class="btn ghost" href="${esc(url)}">${icon('eye')}Открыть</a><button class="btn primary" data-action="close-sheet">Готово</button>` });
+  },
+
+  'team-filter'(el) { ui.teamFilter = el.dataset.v; rerender(); },
+  'like'(el) {
+    const p = getP(el.dataset.id); const i = session.liked.indexOf(p.id);
+    if (i >= 0) { session.liked.splice(i, 1); p.likes = Math.max(0, (p.likes || 0) - 1); } else { session.liked.push(p.id); p.likes = (p.likes || 0) + 1; }
+    save(); saveSession();
+    el.classList.toggle('on', i < 0); el.setAttribute('aria-pressed', i < 0); el.querySelector('span').textContent = p.likes;
+    el.classList.remove('pop'); void el.offsetWidth; if (i < 0) el.classList.add('pop');
+  },
+  'endorse'(el) {
+    const p = getP(el.dataset.pid); const m = p?.members.find(x => x.id === el.dataset.uid); if (!m) return;
+    const s = el.dataset.skill, key = `${m.id}:${s}`, i = session.endorsed.indexOf(key);
+    m.endorsements ||= {};
+    if (i >= 0) { session.endorsed.splice(i, 1); m.endorsements[s] = Math.max(0, (m.endorsements[s] || 0) - 1); }
+    else { session.endorsed.push(key); m.endorsements[s] = (m.endorsements[s] || 0) + 1; }
+    save(); saveSession();
+    el.classList.toggle('on', i < 0); el.setAttribute('aria-pressed', i < 0); el.textContent = '+' + m.endorsements[s];
+  },
+  'people-skill'(el) { ui.peopleSkill = el.dataset.v; rerender(); },
+  'people-open'(el) { ui.peopleOpen = el.checked; $('#people-list').innerHTML = peopleListHTML(); },
+  async 'copy-contact'(el) { const ok = await copyText(el.dataset.v); toast(ok ? `Контакт ${el.dataset.v} скопирован` : el.dataset.v); },
+
+  'edit-module'(el) { moduleSheet(el.dataset.id ? getM(el.dataset.id) : null); },
+  'save-module'() { Sheet.panel?._save(); },
+  'add-field'() { Sheet.panel?._fields(l => l.push({ id: uid('f'), label: '', placeholder: '', type: 'textarea', required: false })); Sheet.panel.querySelector('[data-fi]:last-child input')?.focus(); },
+  'rm-field'(el) { Sheet.panel?._fields(l => l.splice(+el.dataset.i, 1)); },
+  'move-module'(el) {
+    const i = S.modules.findIndex(m => m.id === el.dataset.id), j = i + +el.dataset.dir;
+    if (j < 0 || j >= S.modules.length) return;
+    [S.modules[i], S.modules[j]] = [S.modules[j], S.modules[i]]; save(); rerender();
+  },
+  'delete-module'(el) {
+    if (S.modules.length <= 3) { toast('В программе должно быть минимум 3 модуля'); return; }
+    const idx = S.modules.findIndex(m => m.id === el.dataset.id); const [m] = S.modules.splice(idx, 1); save(); rerender();
+    toast(`Модуль «${m.title}» удалён`, { label: 'Отменить', action() { S.modules.splice(idx, 0, m); save(); rerender(); } });
+  },
+
+  'reset-demo'() {
+    confirmSheet({ title: 'Сбросить демо-данные?', text: 'Все проекты, ответы, комментарии и изменения модулей в этом браузере будут заменены исходными демо-данными.', confirm: 'Сбросить',
+      onConfirm() { S = seed(); save(); session = { liked: [], endorsed: [] }; saveSession(); location.hash = '#/'; route(); toast('Демо-данные восстановлены'); } });
+  },
+};
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action]');
+  if (!el || el.tagName === 'INPUT') return;
+  const fn = actions[el.dataset.action]; if (!fn) return;
+  if (el.tagName === 'BUTTON' || el.tagName === 'DIV') e.preventDefault();
+  fn(el, e);
+});
+document.addEventListener('change', (e) => {
+  const el = e.target.closest('input[data-action]'); if (el && actions[el.dataset.action]) actions[el.dataset.action](el, e);
+});
+
+// Autosave: every keystroke is persisted immediately (localStorage is synchronous)
+let saveTimer;
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.matches('[data-field]')) {
+    const { p, m } = moduleCtx(); if (!p || isCurator()) return;
+    (p.answers[m.id] ||= {})[t.dataset.field] = t.value;
+    p.updatedAt = Date.now();
+    const ok = save();
+    const box = t.closest('[data-fbox]');
+    box.querySelector('[data-count]').textContent = t.value.length;
+    if (t.value.trim()) { box.classList.remove('invalid'); t.removeAttribute('aria-invalid'); }
+    const ss = $('#savestate');
+    if (ss && ok) {
+      ss.classList.add('saving'); ss.querySelector('span').textContent = 'Сохранение…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { ss.classList.remove('saving'); ss.querySelector('span').textContent = 'Сохранено · ' + new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(Date.now()); }, 350);
+    }
+    const btn = $('[data-action="submit-module"]');
+    if (btn && isDone(p, m)) btn.textContent = changedSinceSubmit(p, m) ? 'Отправить новую версию' : 'Отправить заново';
+  } else if (t.matches('[data-filter="teams"]')) { ui.teamQuery = t.value; $('#teams-list').innerHTML = teamsListHTML(); }
+  else if (t.matches('[data-filter="people"]')) { ui.peopleQuery = t.value; $('#people-list').innerHTML = peopleListHTML(); }
+  else if (t.closest('.sheet .field.invalid') && t.value.trim()) t.closest('.field').classList.remove('invalid');
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && Sheet.root) { e.preventDefault(); closeSheet(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (Sheet.panel?._save) { e.preventDefault(); Sheet.panel._save(); }
+    else if ($('[data-action="submit-module"]')) { e.preventDefault(); actions['submit-module'](); }
+    else if (document.activeElement?.id === 'cmt') { e.preventDefault(); actions['add-comment'](); }
+  }
+});
+// Sync across tabs
+addEventListener('storage', (e) => { if (e.key === LS_KEY && e.newValue && !document.activeElement?.matches('[data-field]')) { S = load(); S.projects.forEach(normalize); rerender(); } });
+
+lastPath = location.hash;
+route();
+</script>
+</body>
+</html>
