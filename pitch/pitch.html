@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Launch Lab 21 — питч</title>
+<style>
+  @page { size: 297mm 210mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fdfcf8; color: #101218; font-family: "Segoe UI", Inter, Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 297mm; height: 210mm; padding: 18mm 20mm; position: relative; page-break-after: always; overflow: hidden; display: flex; flex-direction: column; }
+  .slide:last-child { page-break-after: auto; }
+  .eyebrow { font-size: 11pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #7a7873; margin-bottom: 8mm; }
+  h1 { font-size: 46pt; font-weight: 700; letter-spacing: -.03em; line-height: 1.02; }
+  h2 { font-size: 34pt; font-weight: 700; letter-spacing: -.025em; line-height: 1.05; margin-bottom: 10mm; }
+  .accent { color: #2f7bf0; }
+  .lead { font-size: 15pt; line-height: 1.45; color: #4a4946; max-width: 200mm; }
+  .grid { display: grid; gap: 6mm; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card { border: 1px solid #e6e2d8; background: #fff; border-radius: 7mm; padding: 8mm; }
+  .card.blue { border-color: rgba(47,123,240,.4); background: linear-gradient(160deg,#fff, rgba(47,123,240,.07)); }
+  .card h3 { font-size: 15pt; font-weight: 700; margin-bottom: 3mm; letter-spacing: -.01em; }
+  .card p, .card li { font-size: 11.5pt; line-height: 1.45; color: #4a4946; }
+  .card ul { padding-left: 5mm; }
+  .num { font-size: 12pt; color: #7a7873; font-weight: 600; margin-bottom: 3mm; }
+  .big { font-size: 40pt; font-weight: 700; letter-spacing: -.03em; color: #2f7bf0; line-height: 1; margin-bottom: 2mm; }
+  .foot { position: absolute; left: 20mm; right: 20mm; bottom: 10mm; display: flex; justify-content: space-between; font-size: 9pt; color: #7a7873; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(60px); z-index: 0; pointer-events: none; }
+  .content { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; }
+  .flow { display: flex; align-items: stretch; gap: 4mm; margin-top: 4mm; }
+  .flow .step { flex: 1; border: 1px solid #e6e2d8; border-radius: 6mm; padding: 6mm; background: #fff; }
+  .flow .step b { display: block; font-size: 12.5pt; margin-bottom: 2mm; }
+  .flow .step span { font-size: 10.5pt; color: #4a4946; line-height: 1.4; }
+  .flow .arrow { align-self: center; color: #2f7bf0; font-size: 20pt; }
+  .pill { display: inline-block; border-radius: 100px; padding: 1.5mm 4mm; font-size: 10pt; font-weight: 600; margin-right: 2mm; }
+  .pill.g { background: #e6f5ee; color: #17a36b; } .pill.b { background: #e4eefc; color: #2f7bf0; } .pill.d { background: #efece4; color: #4a4946; }
+  .logo { display: inline-flex; align-items: center; gap: 3mm; font-weight: 700; font-size: 13pt; }
+  .logo i { width: 8mm; height: 8mm; border-radius: 2.4mm; background: #101218; display: inline-block; position: relative; }
+  .logo i::after { content: ""; position: absolute; left: 2mm; top: 1.6mm; width: 1.5mm; height: 3.6mm; background: #2f7bf0; box-shadow: 0 3.6mm 0 0 #2f7bf0, 1.5mm 3.6mm 0 0 #2f7bf0, 3mm 3.6mm 0 0 #2f7bf0; }
+  code { font-family: Consolas, monospace; font-size: 10.5pt; background: #f4f2eb; padding: .5mm 2mm; border-radius: 2mm; }
+  .bar { height: 3mm; border-radius: 2mm; background: #ebe8df; overflow: hidden; margin-top: 3mm; }
+  .bar i { display: block; height: 100%; background: #2f7bf0; }
+</style>
+</head>
+<body>
+
+<!-- 1. Титул -->
+<section class="slide">
+  <div class="glow" style="width:120mm;height:120mm;left:-30mm;top:-30mm;background:rgba(47,123,240,.18)"></div>
+  <div class="glow" style="width:100mm;height:100mm;right:-20mm;bottom:-20mm;background:rgba(124,92,255,.14)"></div>
+  <div class="content" style="justify-content:center">
+    <div class="eyebrow">Турнир «Вайбкодинг» · School 21 · Launch Lab 21</div>
+    <h1>One-pager,<br>который <span class="accent">собирается сам</span></h1>
+    <p class="lead" style="margin-top:10mm">Платформа инкубатора: команда проходит модули программы, отвечает на вопросы — и на выходе получает живую карточку стартапа, а не документ, написанный ночью перед Demo Day.</p>
+    <div style="margin-top:14mm" class="logo"><i></i> Launch Lab 21 · команда Ghoul</div>
+  </div>
+  <div class="foot"><span>github.com/vexi1es/Ghoul</span><span>Прототип: dist/index.html — без сервера и интернета</span></div>
+</section>
+
+<!-- 2. Проблема -->
+<section class="slide">
+  <div class="content">
+    <div class="eyebrow">01 · Проблема</div>
+    <h2>Одну работу делают <span class="accent">дважды</span></h2>
+    <div class="grid g3">
+      <div class="card"><div class="num">Сейчас</div><h3>Модули — отдельно</h3><p>Команда честно проходит программу инкубатора и отвечает на задания куратора. Эти ответы лежат в чатах и таблицах.</p></div>
+      <div class="card"><div class="num">Потом</div><h3>One-pager — отдельно</h3><p>Перед Demo Day команда садится и пишет one-pager с нуля. Те же вопросы, те же ответы, ещё одна ночь.</p></div>
+      <div class="card"><div class="num">В итоге</div><h3>Документ мёртв</h3><p>Через неделю one-pager устарел: продукт ушёл вперёд, а страница осталась. Инвестор и куратор видят старую версию.</p></div>
+    </div>
+    <p class="lead" style="margin-top:10mm">Куратор не видит, где застряла команда. Инвестор не знает, кому и сколько нужно. Пир не найдёт проект, которому нужен именно он.</p>
+  </div>
+  <div class="foot"><span>Launch Lab 21</span><span>2 / 6</span></div>
+</section>
+
+<!-- 3. Решение -->
+<section class="slide">
+  <div class="glow" style="width:110mm;height:110mm;right:-30mm;top:-30mm;background:rgba(47,123,240,.14)"></div>
+  <div class="content">
+    <div class="eyebrow">02 · Решение</div>
+    <h2>Ответы в модулях <span class="accent">=</span> one-pager</h2>
+    <div class="flow">
+      <div class="step"><b>Проблема и аудитория</b><span>Какую боль решаете, кто страдает, как справляются сейчас</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Решение и MVP</b><span>Что за продукт, ключевая функция, что уже сделано</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Рынок и клиенты</b><span>Первые клиенты, канал, аналоги и отличие</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Команда и ресурсы</b><span>Кто в команде, кого ищем, сколько нужно денег</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:8mm">
+      <div class="card blue"><h3>Ничего не пишется дважды</h3><p>Каждое поле модуля — это блок one-pager. Сохранил ответ — страница обновилась. Незаполненный модуль показан честным пустым разделом, а не спрятан.</p></div>
+      <div class="card"><h3>Модули — это данные, не экраны</h3><p>Программа хранится массивом объектов с подсказками. Все экраны — список, форма, one-pager — строятся из него. Добавить модуль = добавить объект.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Launch Lab 21</span><span>3 / 6</span></div>
+</section>
+
+<!-- 4. Что сверху -->
+<section class="slide">
+  <div class="content">
+    <div class="eyebrow">03 · Чем мы лучше</div>
+    <h2>Не документ, а <span class="accent">живая карточка</span> стартапа</h2>
+    <div class="grid g3">
+      <div class="card">
+        <div class="num">Стадия считается сама</div>
+        <span class="pill d">Идея</span><span class="pill b">MVP</span><span class="pill g">Готов к инвестициям</span>
+        <div class="bar"><i style="width:50%"></i></div>
+        <p style="margin-top:4mm">0–1 модуль — идея, 2–3 — MVP, все четыре — готов к инвестициям. Никто ничего не выбирает руками: статус вытекает из работы команды.</p>
+      </div>
+      <div class="card">
+        <div class="num">Галерея Demo Day</div>
+        <h3>Все команды на одном экране</h3>
+        <p>Карточки: стадия, прогресс, состав, «ищем в команду». Фильтры: готовы к инвестициям, ищут людей. Инвестор видит, кому сколько нужно. Пир находит проект, которому нужен именно он.</p>
+      </div>
+      <div class="card">
+        <div class="num">Роли без авторизации</div>
+        <h3>Участник · Куратор · Гость</h3>
+        <p>Участник работает со своим проектом. Куратор видит прогресс всех команд, открывает ответы и комментирует модуль. Гость смотрит one-pager и оставляет отзыв.</p>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:8mm">Demo Day круглый год: карточка обновляется по мере прохождения программы, а не за ночь до показа.</p>
+  </div>
+  <div class="foot"><span>Launch Lab 21</span><span>4 / 6</span></div>
+</section>
+
+<!-- 5. Демо -->
+<section class="slide">
+  <div class="content">
+    <div class="eyebrow">04 · Живое демо · 2 минуты</div>
+    <h2>Путь пользователя</h2>
+    <div class="grid g2">
+      <div class="card">
+        <ul>
+          <li><b>Участник</b> открывает проект → модуль «Проблема и аудитория» → вписывает фразу от жюри → <b>Сохранить</b></li>
+          <li><b>F5</b> — ответ на месте (LocalStorage)</li>
+          <li>Открываем <b>one-pager</b> — фраза в блоке «Проблема», стадия и прогресс пересчитались</li>
+          <li><b>Галерея</b>: фильтр «Готовы к инвестициям», блок «Ищем в команду»</li>
+          <li>Переключаем роль на <b>Куратора</b> → комментарий к модулю</li>
+          <li>Открываем <b>пустой проект</b> → честные пустые разделы, вёрстка цела</li>
+          <li>Кнопка <b>PDF</b> — печать one-pager</li>
+        </ul>
+      </div>
+      <div class="card blue">
+        <h3>Три обязательные проверки</h3>
+        <ul>
+          <li>Перезагрузка — введённый ответ остался</li>
+          <li>Фраза жюри в поле модуля → она же в one-pager</li>
+          <li>Проект с незаполненным модулем → пустой раздел, ничего не ломается</li>
+        </ul>
+        <h3 style="margin-top:6mm">Стартовые данные</h3>
+        <p>Navbat — заполнен целиком (готов к инвестициям), Skillbridge — наполовину (MVP), «Новый стартап» — пустой (идея).</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Launch Lab 21</span><span>5 / 6</span></div>
+</section>
+
+<!-- 6. Стек -->
+<section class="slide">
+  <div class="glow" style="width:120mm;height:120mm;left:-30mm;bottom:-40mm;background:rgba(23,163,107,.12)"></div>
+  <div class="content">
+    <div class="eyebrow">05 · Как сделано</div>
+    <h2>Только клиент. <span class="accent">Ноль</span> бэкенда.</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Стек</h3><p>React 19 · Vite · Tailwind 4 · HeroUI v3 · framer-motion. Шрифт Geist вшит в бандл. Сборка в один <code>index.html</code> — открывается двойным кликом, без сервера и интернета.</p></div>
+      <div class="card"><h3>Данные</h3><p>Один ключ <code>ll21</code> в LocalStorage: проекты, ответы, комментарии, роль. Стадия и прогресс не хранятся — вычисляются из ответов. Ничего не дублируется.</p></div>
+      <div class="card"><h3>Вайбкодинг</h3><p>Claude Code (Opus 5) + Z.ai. Короткие промпты по одному: каркас → сохранение → one-pager → модули → стадия → галерея → роли → визуал. История чатов сдана вместе с проектом.</p></div>
+    </div>
+    <div class="card" style="margin-top:8mm;display:flex;justify-content:space-between;align-items:center">
+      <div><h3>github.com/vexi1es/Ghoul</h3><p>Исходники, собранный прототип, документация идеи, транскрипты AI-чатов</p></div>
+      <div class="logo"><i></i> Launch Lab 21</div>
+    </div>
+  </div>
+  <div class="foot"><span>Спасибо · вопросы?</span><span>6 / 6</span></div>
+</section>
+
+</body>
+</html>
